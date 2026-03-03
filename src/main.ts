@@ -3,9 +3,11 @@ import './scss/styles.scss';
 import { Catalog } from './components/models/Catalog';
 import { Basket } from './components/models/Basket';
 import { Buyer } from './components/models/Buyer';
+import { ApiCommunication } from './components/communication/ApiCommunication';
+import { Api } from './components/base/Api';
 import { apiProducts } from './utils/data';
-
 import { TPayment } from './types';
+import { API_URL } from './utils/constants';
 
 // Проверка классов
   //Класс Catalog
@@ -107,6 +109,14 @@ import { TPayment } from './types';
     byuerModel.setBuyerData('payment', newBuyer.payment as TPayment);
     byuerModel.setBuyerData('email', newBuyer.email);
     console.log('Валидация данных для заказа (заполенные поля):', byuerModel.validateForm());
+    console.log('-----------');
+
+const api = new Api(API_URL);
+const apiCommunication = new ApiCommunication(api);
+
+const fetchData = await apiCommunication.fetchProducts();
+const productCatalog = new Catalog(fetchData.items);
+console.log('Каталог товаров, полученный по API:', productCatalog.getProducts());
 
 
 
