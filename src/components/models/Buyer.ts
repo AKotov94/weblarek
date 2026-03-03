@@ -1,7 +1,7 @@
 import { IBuyer } from "../../types/";
 
 export class Buyer {
-  buyer: IBuyer = {} as IBuyer;
+  private buyer: IBuyer = {} as IBuyer;
 
   setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void {
     this.buyer[key] = value;

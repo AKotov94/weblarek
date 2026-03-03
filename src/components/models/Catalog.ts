@@ -1,30 +1,30 @@
 import { IProduct } from "../../types/index.ts";
 
 export class Catalog {
-  products: IProduct[];
-  selectedProduct!: IProduct | null;
+  private products: IProduct[];
+  private selectedProduct!: IProduct | null;
 
   constructor (products: IProduct[]) {
     this.products = products;
   }
 
-  setProducts(newProducts: IProduct[]): void {
-    this.products = newProducts;
-  };
-
   getProducts(): IProduct[] {
     return this.products;
+  };
+
+  getSelectedProduct(): IProduct | null {
+    return this.selectedProduct
   };
 
   getProductById(id: string): IProduct | null {
     return this.products.find(product => product.id === id) || null;
   };
 
-  setSelectedProduct(product: IProduct): void {
-    this.selectedProduct = product;
+  setProducts(newProducts: IProduct[]): void {
+    this.products = newProducts;
   };
 
-  getSelectedProduct(): IProduct | null {
-    return this.selectedProduct
+  setSelectedProduct(product: IProduct): void {
+    this.selectedProduct = product;
   };
 }

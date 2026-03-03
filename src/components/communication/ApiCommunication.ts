@@ -1,7 +1,7 @@
 import { IApi, FetchData, IOrder } from "../../types";
 
 export class ApiCommunication {
-  api: IApi;
+  protected api: IApi;
 
   constructor (apiInstance: IApi) {
     this.api = apiInstance;
