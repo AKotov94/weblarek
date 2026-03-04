@@ -1,4 +1,4 @@
-import { IApi, FetchData, IOrder } from "../../types";
+import { IApi, FetchData, IOrder, OrderResponse } from "../../types";
 
 export class ApiCommunication {
   protected api: IApi;
@@ -16,7 +16,7 @@ export class ApiCommunication {
     }
   }
 
-  async sendOrder(orderData: Promise<IOrder>) {
+  async sendOrder(orderData: IOrder): Promise<OrderResponse> {
     try {
       return await this.api.post('/order/', orderData);
     } catch (error) {

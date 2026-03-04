@@ -23,6 +23,8 @@ export interface IBuyer {
   address: string;
 }
 
+export type ValidationErrors = Partial<Record<keyof IBuyer, string>>
+
 export interface IOrder extends IBuyer {
   total: number;
   items: string[];
@@ -33,8 +35,7 @@ export type FetchData = {
   items: IProduct[]
 }
 
-// В целом, наверное, можно сделать общий тип {
-//   total: number;
-//   items: IProduct | string[];
-// }
-// но для разных типов запросов я посчитал, что лучше более строго типизировать
+export type OrderResponse = {
+  orederID: string,
+  total: number
+}

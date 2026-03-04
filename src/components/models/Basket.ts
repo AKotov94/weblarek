@@ -4,7 +4,7 @@ export class Basket {
   private items: IProduct[] = [];
 
   getItems(): IProduct[] {
-    return this.items;
+    return [...this.items];
   };
 
   addItem(item: IProduct): void {
@@ -12,15 +12,14 @@ export class Basket {
   };
 
   deleteItem(item: IProduct): void {
-    this.items = this.items.filter(elem => elem.id != item.id);
+    this.items = this.items.filter(elem => elem.id !== item.id);
   };
 
   clearBasket(): void {
     this.items = [];
   };
 
-  getTotalPrice(): number | null {
-    if (this.items.length === 0) return null;
+  getTotalPrice(): number {
     return this.items.reduce((acc, item) => acc + (item.price ?? 0), 0);
   };
 

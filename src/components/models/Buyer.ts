@@ -1,38 +1,41 @@
-import { IBuyer } from "../../types/";
+import { IBuyer,ValidationErrors } from "../../types/";
+
+const defoltBuyer: IBuyer = {
+  payment: null,
+  email: '',
+  phone: '',
+  address: ''
+}
 
 export class Buyer {
-  private buyer: IBuyer = {} as IBuyer;
+  private buyer: IBuyer = {...defoltBuyer};
 
   setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void {
     this.buyer[key] = value;
   };
 
   getBuyerData(): IBuyer {
-    return this.buyer;
+    return {...this.buyer}; // LLM сказала, что это лучший подход для выдачи состояния в момент вызова
   };
 
   clearBuyerData(): void {
-    this.buyer = {} as IBuyer;
+    this.buyer = {...defoltBuyer};
   };
 
-  validateForm(): { paymentValidation: string, emailValidation: string} {
-    const errorMassages = {
-      paymentError: 'Не выбран вид оплаты',
-      emailError: 'Укажите емэйл'
-    }
-    const validation = {
-      paymentValidation: '',
-      emailValidation: ''
-    }
-
+  validateForm(): ValidationErrors {
+    const errors: ValidationErrors = {};
     if (!this.buyer.payment) {
-      validation.paymentValidation = errorMassages.paymentError
-    }
-
+      errors.payment = 'Не выбран вид оплаты'
+    };
     if (!this.buyer.email) {
-      validation.emailValidation = errorMassages.emailError
-    }
-
-    return validation;
+      errors.email = 'Укажите e-mail'
+    };
+    if (!this.buyer.phone) {
+      errors.phone = 'Укажите телефон'
+    };
+    if (!this.buyer.address) {
+      errors.address = 'Укажите адрес'
+    };
+    return errors;
   }
 }

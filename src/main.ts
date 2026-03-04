@@ -6,7 +6,7 @@ import { Buyer } from './components/models/Buyer';
 import { ApiCommunication } from './components/communication/ApiCommunication';
 import { Api } from './components/base/Api';
 import { apiProducts } from './utils/data';
-import { TPayment } from './types';
+import { FetchData, TPayment } from './types';
 import { API_URL } from './utils/constants';
 
 // Проверка классов
@@ -108,13 +108,28 @@ import { API_URL } from './utils/constants';
     console.log('Валидация данных для заказа (незаполенные поля):', byuerModel.validateForm());
     byuerModel.setBuyerData('payment', newBuyer.payment as TPayment);
     byuerModel.setBuyerData('email', newBuyer.email);
+    byuerModel.setBuyerData('phone', newBuyer.phone);
+    byuerModel.setBuyerData('address', newBuyer.address);
     console.log('Валидация данных для заказа (заполенные поля):', byuerModel.validateForm());
     console.log('-----------');
 
 const api = new Api(API_URL);
 const apiCommunication = new ApiCommunication(api);
 
-const fetchData = await apiCommunication.fetchProducts();
+async function loadData(): Promise<FetchData> {
+  try {
+    return await apiCommunication.fetchProducts();
+  } catch (error) {
+    console.log('Ошибка при получении данных.');
+    return {
+      total: 0,
+      items: []
+    }
+  }
+}
+
+const fetchData = await loadData();
+
 const productCatalog = new Catalog(fetchData.items);
 console.log('Каталог товаров, полученный по API:', productCatalog.getProducts());
 

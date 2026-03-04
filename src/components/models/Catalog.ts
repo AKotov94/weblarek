@@ -9,19 +9,20 @@ export class Catalog {
   }
 
   getProducts(): IProduct[] {
-    return this.products;
+    return [...this.products];
   };
 
   getSelectedProduct(): IProduct | null {
-    return this.selectedProduct
+    return this.selectedProduct ? { ...this.selectedProduct } : null;
   };
 
   getProductById(id: string): IProduct | null {
-    return this.products.find(product => product.id === id) || null;
+    const productById = this.products.find(product => product.id === id);
+    return productById ? {...productById} : null;
   };
 
   setProducts(newProducts: IProduct[]): void {
-    this.products = newProducts;
+    this.products = newProducts; // В принципе, LLM советует и в методах set* присваивать копию, а не ссылку, но мне кажется это избыточным
   };
 
   setSelectedProduct(product: IProduct): void {
