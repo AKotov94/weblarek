@@ -100,6 +100,12 @@ Presenter - презентер содержит основную логику п
 
 ### Данные
 
+#### Тип TPayment
+Типизирует доступные варианты при выборе оплаты.
+
+Поля типа:
+`'card' | 'cash' | null`
+
 #### Интерфейс IProduct
 Данные о товарах.
 
@@ -124,27 +130,37 @@ Presenter - презентер содержит основную логику п
 
 Интерфейс не имеет методов.
 
-#### Интерфейс IOrder
+#### Интерфейс IOrder расширяется от IBuyer
 Данные о сформированном заказе.
 
-Поля интерфейса:
-`extends IByuer` - все поля интерфейса IByuer.
+Дополнительные поля интерфейса:
+`total: number` - общая сумма заказа.
 `items: string[]` - массив ID выбранных товаров.
 
 ### Модели данных
 
+#### Тип ValidationErrors
+Объект c опциональными полями IByer и строковыми значениями. Типизирует массив ошибок, полученных в ходе валидации введенных данных при заказе.
+
+Поля типа:
+{
+  payment?: string | undefined;
+  email?: string | undefined;
+  phone?: string | undefined;
+  address?: string | undefined;
+}
+
 #### Класс Catalog
 Хранит данные о товарах, которые можно купить в приложении.
 
-Конструктор:
-`products: IProduct[]` - в конструктор передаются данные о товарах.
+Конструктор класса не принимает параметров.
 
 Поля класса:
 `products: IProduct[]` - хранит массив данных о товарах.
 `selectedProduct: IProduct | null` - хранит данные о выбранном товаре.
 
 Методы класса:
-`setProducts(newProducts: IProduct[]): void` - обновляет массив данных о товарах.
+`setProducts(newProducts: IProduct[]): void` - получает массив данных о товарах.
 `getProducts(): IProduct[]` - получает сохраненный массив данных о товарах.
 `getProductById(id: string): IProduct | null` - получает данные о товара по его ID.
 `setSelectedProduct(product: IProduct): void` - сохраняет данные о выбранном товаре.
@@ -163,7 +179,7 @@ Presenter - презентер содержит основную логику п
 `addItem(item: IProduct): void` - добавляет полученный в параметре товар в массив корзины.
 `deleteItem(item: IProduct): void` - удаляет полученный в параметре товар из корзины.
 `clearBasket(): void` - очистка корзины.
-`getTotalPrice(): number | null` - получает суммарную стоимость товаров в корзине.
+`getTotalPrice(): number` - получает суммарную стоимость товаров в корзине.
 `containsItemById(id: string): boolean` - проверяет наличие товара в корзине по ID.
 
 #### Класс Buyer
@@ -172,16 +188,34 @@ Presenter - презентер содержит основную логику п
 Конструктор класса не принимает параметров. 
 
 Поля класса:
-`buyer: IBuyer = {}` - в конструктор передаются данные о покупателе.
+`buyer: IBuyer = { payment: null, email: '', phone: '', address: ''}` - хранит массив данных о покупателе.
 
 Методы класса:
 
-`setBuyerData<T extends IBuyer>(data: T): void` - сохраняет полученное в параметре значение в соответсвующее поле данных о покупателе.
+`setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void` - сохраняет полученное в параметре значение в соответсвующее поле данных о покупателе.
 `getBuyerData(): IBuyer` - получает все данные покупателя.
 `clearBuyerData(): void` - очистка данных покупателя.
-`validateForm(): { paymentValidation: string, emailValidation: string }` - валидирует данные, заполенные при оформлении заказа.
+`validateForm(): ValidationErrors` - валидирует данные, заполенные при оформлении заказа.
 
 ### Слой коммуникации
+
+#### Тип FetchData
+Типизирует объект, получаемый по Api на запрос данных для каталога продуктов.
+
+Поля типа:
+{
+  total: number,
+  items: IProduct[]
+}
+
+#### Тип OrderResponse
+Типизирует объект, получаемый после успешной отправки данных заказа по Api.
+
+Поля типа:
+{
+  total: number,
+  id: string,
+}
 
 #### Класс ApiCommunication
 
@@ -193,5 +227,5 @@ Presenter - презентер содержит основную логику п
 
 Методы класса:
 
-`fetchProducts(): IProduct[]` - получает данные о каталоге продуктов.
-`sendOrder([IProduct, IBuyer])` - отправляет данные о заказе.
+`fetchProducts(): Promise<FetchData>` - получает данные о каталоге продуктов.
+`sendOrder(orderData: IOrder]): Promise<OrderResponse>` - отправляет данные о заказе.

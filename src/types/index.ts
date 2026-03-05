@@ -36,6 +36,6 @@ export type FetchData = {
 }
 
 export type OrderResponse = {
-  orederID: string,
-  total: number
+  total: number,
+  id: string,
 }

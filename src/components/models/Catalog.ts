@@ -1,12 +1,10 @@
 import { IProduct } from "../../types/index.ts";
 
 export class Catalog {
-  private products: IProduct[];
+  private products!: IProduct[];
   private selectedProduct!: IProduct | null;
 
-  constructor (products: IProduct[]) {
-    this.products = products;
-  }
+  constructor () {};
 
   getProducts(): IProduct[] {
     return [...this.products];

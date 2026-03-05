@@ -11,28 +11,24 @@ import { API_URL } from './utils/constants';
 
 // Проверка классов
   //Класс Catalog
-    console.log('Проверка класса Catalog:');
-
-    // Проверка констурктора
+    console.log('Проверка класса Catalog:')
     
-    const catalogModel = new Catalog(apiProducts.items);
-    console.log('Массив товаров из каталога:', catalogModel.getProducts());
+    // Конструктор класса не принимает параметров
+
+    const catalogModel = new Catalog();
 
     // Проверка методов
 
     // `setProducts(newProducts: IProduct[]): void` - обновляет массив данных о товарах
     // `getProducts(): IProduct[]` - получает сохраненный массив данных о товарах
 
-    const newData = apiProducts.items.slice(0, 2);
-    catalogModel.setProducts(newData);
-    console.log('Новый каталог из первых 2х элементов:', catalogModel.getProducts());
+    catalogModel.setProducts(apiProducts.items);
+    console.log('Полученный каталог товаров:', catalogModel.getProducts());
 
     // `getProductById(id: string): IProduct | null` - получает данные о товара по его ID
 
     const productID = apiProducts.items[0].id;
-    const nonExistentProductId = apiProducts.items[3].id;
     console.log('Полученный элемент по ID:', catalogModel.getProductById(productID));
-    console.log('Полученный элемент по ID, не входящий в значения в классе:', catalogModel.getProductById(nonExistentProductId));
 
     // `setSelectedProduct(product: IProduct): void` - сохраняет данные о выбранном товаре
     // `getSelectedProduct(): IProduct | null` - получает данные о выбранном товаре
@@ -130,7 +126,8 @@ async function loadData(): Promise<FetchData> {
 
 const fetchData = await loadData();
 
-const productCatalog = new Catalog(fetchData.items);
+const productCatalog = new Catalog();
+productCatalog.setProducts(fetchData.items);
 console.log('Каталог товаров, полученный по API:', productCatalog.getProducts());
 
 
