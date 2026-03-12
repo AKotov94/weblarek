@@ -191,7 +191,6 @@ Presenter - презентер содержит основную логику п
 `buyer: IBuyer = { payment: null, email: '', phone: '', address: ''}` - хранит массив данных о покупателе.
 
 Методы класса:
-
 `setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void` - сохраняет полученное в параметре значение в соответсвующее поле данных о покупателе.
 `getBuyerData(): IBuyer` - получает все данные покупателя.
 `clearBuyerData(): void` - очистка данных покупателя.
@@ -226,6 +225,43 @@ Presenter - презентер содержит основную логику п
 `api: IApi` - экземпляр класса Api, использующий свои методы для получения данных о каталоге продуктов и отправки данных о заказе.
 
 Методы класса:
-
 `fetchProducts(): Promise<FetchData>` - получает данные о каталоге продуктов.
 `sendOrder(orderData: IOrder]): Promise<OrderResponse>` - отправляет данные о заказе.
+
+### Слой представления
+
+#### Класс Header наследуется от Component
+Отвечает за отображение блока разметки '.header'.
+
+Дополнительные поля класса:
+`basketCounter: HTMLElement` - счетчик количества добавленных в корзину товаров.
+`basketButton: HTMLButtonElement` - кнопка открытия корзины.
+
+Методы класса: 
+`setBasketCount(value: number): ` - устанавливает значение счетчика корзины.
+#### Класс Gallery наследуется от Component
+Отвечает за отображение блока разметки '.gallery'.
+
+Класс не имеет дополнительных полей.
+
+Методы класса: 
+`setGalleryContent(content: HTMLElement[]): ` - заполняет каталог переданными товарами.
+#### Класс Modal наследуется от Component
+Отвечает за отображение модального окна.
+
+Дополнительные поля класса:
+`modalContent: HTMLElement` - контейнер для контента модального окна.
+`modalCloseButton: HTMLButtonElement` - кнопка закрытия модального окна.
+
+Методы класса: 
+`setModalContent(content: HTMLElement): ` - вставляет переданный контент в модальное окно.
+#### Класс Basket
+#### Класс Card
+#### Класс CardCatalog
+#### Класс CardPreview
+#### Класс CardBasket
+#### Класс Form
+#### Класс FormOrder
+#### Класс FormContacts
+
+### Презентер
