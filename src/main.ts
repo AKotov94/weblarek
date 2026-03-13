@@ -8,6 +8,10 @@ import { Api } from './components/base/Api';
 import { apiProducts } from './utils/data';
 import { FetchData, TPayment } from './types';
 import { API_URL } from './utils/constants';
+import { Header } from './components/view/Header';
+import { ensureElement } from './utils/utils';
+import { EventEmitter } from './components/base/Events';
+import { Gallery } from './components/view/Gallery';
 
 // Проверка классов
   //Класс Catalog
@@ -130,5 +134,8 @@ const productCatalog = new Catalog();
 productCatalog.setProducts(fetchData.items);
 console.log('Каталог товаров, полученный по API:', productCatalog.getProducts());
 
-
+const events = new EventEmitter();
+const header = new Header(ensureElement('.header'),events);
+const gallery = new Gallery (ensureElement('.gallery'), events);
+gallery.setGalleryContent(productCatalog.getProducts())
 
