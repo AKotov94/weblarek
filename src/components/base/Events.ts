@@ -1,3 +1,5 @@
+import { IProduct } from "../../types";
+
 // Хорошая практика даже простые типы выносить в алиасы
 // Зато когда захотите поменять это достаточно сделать в одном месте
 type EventName = string | RegExp;
@@ -6,6 +8,26 @@ type EmitterEvent = {
     eventName: string,
     data: unknown
 };
+
+export const EVENTS = {
+  MODAL_OPEN: 'modal:open',
+  MODAL_CLOSE: 'modal:close',
+  BASKET_OPEN: 'basket:open',
+  BASKET_CHANGED: 'basket:changed',
+  BASKET_ORDER: 'basket:order',
+  CARD_PREVIEW: 'card:preview',
+  CARD_ACTION: 'card:action',
+}
+
+export interface IAppEvents {
+  'modal:open': { content: HTMLElement },
+  'modal:close': {},
+  'basket:open': {},
+  'basket:changed': { items: IProduct[]; total: number },
+  'basket:order': {}
+  'card:preview': IProduct,
+  'card:action': IProduct,
+}
 
 export interface IEvents {
     on<T extends object>(event: EventName, callback: (data: T) => void): void;

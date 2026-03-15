@@ -1,19 +1,16 @@
 import { Component } from "../base/Component";
 import { IProduct } from "../../types";
-import { IEvents } from "../base/Events";
-import { CardCatalog } from "./CardCatalog";
 
-export class Gallery extends Component<IProduct[]> {
-  constructor(container:HTMLElement, private events: IEvents) {
+export class Gallery extends Component<HTMLElement[]> {
+  constructor(container:HTMLElement) {
     super(container);
   }
 
-  setGalleryContent(data: IProduct[]):void {
-    super.render(data);
+  render(cards: HTMLElement[]):HTMLElement {
     this.container.innerHTML = '';
-    data.forEach(card => {
-      const cardElement = CardCatalog.create(card, this.events);
-      this.container.appendChild(cardElement)
+    cards.forEach(card => {
+      this.container.appendChild(card)
     });
+    return this.container
   };
 }

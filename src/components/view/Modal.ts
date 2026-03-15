@@ -1,0 +1,39 @@
+import { Component } from "../base/Component";
+import { ensureElement } from "../../utils/utils";
+import { IEvents, EVENTS } from "../base/Events";
+
+export interface IModalData {
+  content: HTMLElement;
+}
+
+export class Modal extends Component<IModalData> {
+  private modalContent: HTMLElement;
+  private modalButtonClose: HTMLButtonElement;
+
+  constructor(container: HTMLElement, private events: IEvents) {
+    super(container);
+    this.modalContent = ensureElement<HTMLElement>('.modal__content', this.container)
+    this.modalButtonClose = ensureElement<HTMLButtonElement>('.modal__close', this.container);
+    this.modalButtonClose.addEventListener('click', () => this.events.emit(EVENTS.MODAL_CLOSE));
+    this.container.addEventListener('click', (e: MouseEvent) => {
+      if (e.target === this.container) {
+        this.events.emit(EVENTS.MODAL_CLOSE)
+      }
+    })
+  }
+
+  private setModalContent(data: IModalData): void {
+    this.modalContent.innerHTML = '';
+    this.modalContent.appendChild(data.content);
+  }
+
+  close(): void {
+    this.container.classList.remove('modal_active');
+    this.modalContent.innerHTML = '';
+  }
+
+  open(data: IModalData): void {
+    this.setModalContent(data);
+    this.container.classList.add('modal_active');
+  }
+}
