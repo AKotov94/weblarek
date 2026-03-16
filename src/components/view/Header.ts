@@ -10,7 +10,8 @@ export class Header extends Component<IHeaderData> {
   private basketCounter: HTMLElement;
   private basketButton: HTMLButtonElement;
   
-  constructor(container: HTMLElement, private events: IEvents) {
+  constructor(private events: IEvents) {
+    const container = ensureElement('.header');
     super(container);
     this.basketCounter = ensureElement<HTMLElement>('.header__basket-counter', this.container);
     this.basketButton = ensureElement<HTMLButtonElement>('.header__basket', this.container);

@@ -22,9 +22,9 @@ const catalog = new Catalog;
 const basket = new Basket(events);
 const buyer = new Buyer;
 
-const header = new Header(document.querySelector('.header')!, events);
-const gallery = new Gallery(document.querySelector('.gallery')!);
-const modal = new Modal(document.querySelector('.modal')!, events);
+const header = new Header(events);
+const gallery = new Gallery();
+const modal = new Modal(events);
 const basketView = new BasketView(events)
 
 const presenter = new Presenter(

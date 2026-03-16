@@ -14,8 +14,8 @@ export class BasketView extends Component<IBasketData> {
   private orderButton: HTMLButtonElement;
 
   constructor(private events: IEvents) {
-    const container = cloneTemplate<HTMLTemplateElement>('#basket');
-    super(container);
+    const template = cloneTemplate<HTMLTemplateElement>('#basket');
+    super(template);
     this.basketList = ensureElement<HTMLElement>('.basket__list', this.container);
     this.basketTotalPrice = ensureElement<HTMLElement>('.basket__price', this.container);
     this.orderButton = ensureElement<HTMLButtonElement>('.basket__button', this.container);

@@ -58,6 +58,9 @@ export class Presenter {
         }
       }
     });
+    this.events.on<IAppEvents['basket:order']>(EVENTS.BASKET_ORDER, () => {
+
+    });
   }
 
   async init(): Promise<void> {

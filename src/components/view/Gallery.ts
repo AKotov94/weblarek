@@ -1,8 +1,9 @@
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
-import { IProduct } from "../../types";
 
 export class Gallery extends Component<HTMLElement[]> {
-  constructor(container:HTMLElement) {
+  constructor() {
+    const container = ensureElement('.gallery')
     super(container);
   }
 

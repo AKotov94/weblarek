@@ -10,7 +10,8 @@ export class Modal extends Component<IModalData> {
   private modalContent: HTMLElement;
   private modalButtonClose: HTMLButtonElement;
 
-  constructor(container: HTMLElement, private events: IEvents) {
+  constructor(private events: IEvents) {
+    const container = ensureElement('.modal')
     super(container);
     this.modalContent = ensureElement<HTMLElement>('.modal__content', this.container)
     this.modalButtonClose = ensureElement<HTMLButtonElement>('.modal__close', this.container);
