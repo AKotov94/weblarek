@@ -1,6 +1,5 @@
-import { IProduct } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
-import { Card } from "../base/Card";
+import { Card, ICardData } from "../base/Card";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 
 export class CardPreview extends Card {
@@ -8,7 +7,7 @@ export class CardPreview extends Card {
   constructor (
     container: HTMLElement, 
     private events: IEvents,
-    data: IProduct,
+    data: ICardData,
   ) {
     super(container)
     this.cardButton?.addEventListener('click', () => {
@@ -16,14 +15,16 @@ export class CardPreview extends Card {
     })
   }
 
-  static create(data: IProduct, events: IEvents): HTMLElement {
+  static create(data: ICardData, events: IEvents): HTMLElement {
     const template = cloneTemplate<HTMLElement>('#card-preview');
     const card = new CardPreview(template, events, data);
     return card.render(data)
   }
 
-  render(data: IProduct): HTMLElement {
-    super.render(data);
-    return this.container;
+  protected updateFields(data: ICardData): void {
+    super.updateFields(data);
+    if (this.cardButton && data.buttonText) {
+      this.cardButton.textContent = data.buttonText
+    }
   }
 }

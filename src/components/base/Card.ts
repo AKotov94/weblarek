@@ -3,7 +3,12 @@ import { IProduct } from "../../types";
 import { ensureElement } from "../../utils/utils";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 
-export abstract class Card extends Component<IProduct> {
+export interface ICardData extends IProduct {
+  buttonText?: 'В корзину' | 'Удалить из корзины',
+  index?: number
+}
+
+export abstract class Card extends Component<ICardData> {
   protected cardPrice: HTMLElement;
   protected cardTitle: HTMLElement;
   protected cardImage?: HTMLElement | null;
@@ -24,7 +29,7 @@ export abstract class Card extends Component<IProduct> {
     this.cardIndex = this.container.querySelector('.basket__item-index');
   };
 
-  protected updateFields(data: IProduct): void {
+  protected updateFields(data: ICardData): void {
     this.cardPrice.textContent = data.price !== null ? `${data.price} синапсов` : `Бесценно`;
     this.cardTitle.textContent = data.title;
     if (this.cardImage) this.setImage(this.cardImage as HTMLImageElement, `${CDN_URL}${data.image}`);
@@ -39,7 +44,7 @@ export abstract class Card extends Component<IProduct> {
 
   // Жалко нельзя сделать абстрактный статический метод - по концепции отлично подошел бы
 
-  render(data: IProduct): HTMLElement {
+  render(data: ICardData): HTMLElement {
     super.render(data);
     this.updateFields(data);
     return this.container

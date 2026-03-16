@@ -3,7 +3,7 @@ import { Component } from "../base/Component";
 import { EVENTS, IEvents } from "../base/Events";
 import { createElement } from "../../utils/utils";
 
-interface IBasketData {
+export interface IBasketData {
   items: HTMLElement[],
   totalPrice: number
 }

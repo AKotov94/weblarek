@@ -1,6 +1,5 @@
-import { IProduct } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
-import { Card } from "../base/Card";
+import { Card, ICardData } from "../base/Card";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 
 export class CardBasket extends Card {
@@ -8,8 +7,7 @@ export class CardBasket extends Card {
   constructor(
     container: HTMLElement, 
     private events: IEvents, 
-    data: IProduct,
-    private index: number
+    data: ICardData,
   ) {
     super(container);
     this.cardButton?.addEventListener('click', () => {
@@ -17,16 +15,17 @@ export class CardBasket extends Card {
     })
   }
 
-  static create(data: IProduct, events: IEvents, index: number): HTMLElement {
+  static create(data: ICardData, events: IEvents): HTMLElement {
     const template = cloneTemplate<HTMLElement>('#card-basket');
-    const card = new CardBasket(template, events, data, index);
+    const card = new CardBasket(template, events, data);
     return card.render(data)
   }
 
-  render(data: IProduct) {
-    super.render(data);
-    this.cardIndex!.textContent = `${this.index + 1}`; // Это допустимо? Можно написать через if, но если шаблона нет, то все равно все развалится
-    return this.container
+  protected updateFields(data: ICardData): void {
+    super.updateFields(data);
+    if (this.cardIndex && data.index) {
+      this.cardIndex.textContent = `${data.index + 1}`;
+    }
   }
 }
   

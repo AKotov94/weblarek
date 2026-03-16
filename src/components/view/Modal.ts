@@ -22,18 +22,18 @@ export class Modal extends Component<IModalData> {
     })
   }
 
-  private setModalContent(data: IModalData): void {
+  render (data: IModalData): HTMLElement {
     this.modalContent.innerHTML = '';
     this.modalContent.appendChild(data.content);
+    return this.container
   }
 
   close(): void {
     this.container.classList.remove('modal_active');
-    this.modalContent.innerHTML = '';
   }
 
   open(data: IModalData): void {
-    this.setModalContent(data);
     this.container.classList.add('modal_active');
-  }
+    this.render(data)
+  } 
 }

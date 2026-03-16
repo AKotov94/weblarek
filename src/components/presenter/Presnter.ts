@@ -11,8 +11,11 @@ import { BasketView } from "../view/BasketView";
 import { CardBasket } from "../view/CardBasket";
 import { CardPreview } from "../view/CardPreview";
 import { CardCatalog } from "../view/CardCatalog";
+import { ICardData } from "../base/Card";
 
 export class Presenter {
+  private currenModalType: 'card-preview' | 'basket' | null = null;
+  private currentCardPreviewID: string | null = null;
   constructor(
     private events: IEvents,
     private api: ApiCommunication,
@@ -23,27 +26,18 @@ export class Presenter {
     private gallery: Gallery,
     private modal: Modal,
     private basketView: BasketView
-
   ) {
     this.events.on<IAppEvents['basket:open']>(EVENTS.BASKET_OPEN, () => {
-      const data = this.basket.getItems();
-      const price = this.basket.getTotalPrice();
-
-      const cards = data.map((card, index) => {
-        return CardBasket.create(card, this.events, index)
-      })
-      const content = this.basketView.render ({
-        items: cards,
-        totalPrice: price
-      })
-      this.modal.open( {content} )
+      this.modal.open( { content: this.renderBasket()} )
+      this.currenModalType = 'basket'
     });
     this.events.on<IAppEvents['modal:close']>(EVENTS.MODAL_CLOSE, () => {
       this.modal.close();
+      this.currenModalType = null
     });
     this.events.on<IAppEvents['card:preview']>(EVENTS.CARD_PREVIEW, (data) => {
-      const content = CardPreview.create(data, this.events)
-      this.modal.open( {content} )
+      this.modal.open( { content: this.renderCardPreview(data) } )
+      this.currenModalType = 'card-preview'
     });
     this.events.on<IAppEvents['card:action']>(EVENTS.CARD_ACTION, (data) => {
       if (this.basket.containsItemById(data.id)) {
@@ -56,7 +50,14 @@ export class Presenter {
       this.header.render( {
         count: data.items.length
       })
-    })
+      if (this.currenModalType) {
+        if (this.currenModalType === 'basket') {
+          this.modal.render( { content: this.renderBasket()} )
+        } else {
+          this.modal.render( { content: this.renderCardPreview(this.catalog.getProductById(this.currentCardPreviewID!)!) } ) // Это допустимо, использовать "!"? Ведь по факту ни один из них не может быть null в момент открытия карточки
+        }
+      }
+    });
   }
 
   async init(): Promise<void> {
@@ -82,5 +83,26 @@ export class Presenter {
       return CardCatalog.create(card, this.events)
     })
     this.gallery.render(cards)
+  }
+
+  private renderBasket(): HTMLElement {
+    const data = this.basket.getItems();
+    const price = this.basket.getTotalPrice();
+    const cards = data.map((card, index) => {
+      return CardBasket.create( {...card, index}, this.events)
+    });
+    return this.basketView.render ({
+      items: cards,
+      totalPrice: price
+    })
+  }
+
+  private renderCardPreview(data: IProduct): HTMLElement {
+    const previewData: ICardData = {
+      ...data,
+      buttonText: this.basket.containsItemById(data.id) ? 'Удалить из корзины' : 'В корзину'
+    }
+    this.currentCardPreviewID = data.id
+    return CardPreview.create(previewData, this.events)
   }
 }
