@@ -12,6 +12,7 @@ import { CardBasket } from "../view/CardBasket";
 import { CardPreview } from "../view/CardPreview";
 import { CardCatalog } from "../view/CardCatalog";
 import { ICardData } from "../base/Card";
+import { Order } from "../view/Order";
 
 export class Presenter {
   private currenModalType: 'card-preview' | 'basket' | null = null;
@@ -25,7 +26,8 @@ export class Presenter {
     private header: Header,
     private gallery: Gallery,
     private modal: Modal,
-    private basketView: BasketView
+    private basketView: BasketView,
+    private order: Order
   ) {
     this.events.on<IAppEvents['basket:open']>(EVENTS.BASKET_OPEN, () => {
       this.modal.open( { content: this.renderBasket()} )
@@ -54,12 +56,12 @@ export class Presenter {
         if (this.currenModalType === 'basket') {
           this.modal.render( { content: this.renderBasket()} )
         } else {
-          this.modal.render( { content: this.renderCardPreview(this.catalog.getProductById(this.currentCardPreviewID!)!) } ) // Это допустимо, использовать "!"? Ведь по факту ни один из них не может быть null в момент открытия карточки
+          this.modal.render( { content: this.renderCardPreview(this.catalog.getProductById(this.currentCardPreviewID!)!) } ) // Это допустимо, использовать "!"? Ведь по факту ни один из них не может быть null в момент перерисовки карточки
         }
       }
     });
     this.events.on<IAppEvents['basket:order']>(EVENTS.BASKET_ORDER, () => {
-
+      this.modal.render( {content: this.renderOrder()} )
     });
   }
 
@@ -81,7 +83,7 @@ export class Presenter {
   }
   }
 
-  private renderGallery (data: IProduct[]) {
+  private renderGallery (data: IProduct[]): void {
     const cards = data.map(card => {
       return CardCatalog.create(card, this.events)
     })
@@ -101,11 +103,28 @@ export class Presenter {
   }
 
   private renderCardPreview(data: IProduct): HTMLElement {
+    const text = data.price === null ?
+      'Недоступно' :
+      this.basket.containsItemById(data.id) ?
+        'Удалить из корзины' :
+        'В корзину'
     const previewData: ICardData = {
       ...data,
-      buttonText: this.basket.containsItemById(data.id) ? 'Удалить из корзины' : 'В корзину'
+      buttonText: text
     }
     this.currentCardPreviewID = data.id
     return CardPreview.create(previewData, this.events)
+  }
+
+  private renderOrder(): HTMLElement {
+    const allErrors = this.byuer.validateForm()
+    const data = {
+      ...this.byuer.getBuyerData(),
+      errors: {
+        payment: allErrors.payment,
+        address: allErrors.address
+      }
+    }
+    return this.order.render(data)
   }
 }

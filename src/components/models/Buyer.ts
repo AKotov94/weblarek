@@ -15,7 +15,7 @@ export class Buyer {
   };
 
   getBuyerData(): IBuyer {
-    return {...this.buyer}; // LLM сказала, что это лучший подход для выдачи состояния в момент вызова
+    return {...this.buyer};
   };
 
   clearBuyerData(): void {

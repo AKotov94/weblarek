@@ -4,7 +4,7 @@ import { ensureElement } from "../../utils/utils";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 
 export interface ICardData extends IProduct {
-  buttonText?: 'В корзину' | 'Удалить из корзины',
+  buttonText?: 'В корзину' | 'Удалить из корзины' | 'Недоступно',
   index?: number
 }
 
@@ -13,7 +13,7 @@ export abstract class Card extends Component<ICardData> {
   protected cardTitle: HTMLElement;
   protected cardImage?: HTMLElement | null;
   protected cardCategory?: HTMLElement | null;
-  protected cardButton?: HTMLElement | null;
+  protected cardButton?: HTMLButtonElement | null;
   protected cardText?: HTMLElement | null;
   protected cardIndex?: HTMLElement | null;
 

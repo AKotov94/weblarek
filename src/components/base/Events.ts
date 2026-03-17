@@ -17,6 +17,7 @@ export const EVENTS = {
   BASKET_ORDER: 'basket:order',
   CARD_PREVIEW: 'card:preview',
   CARD_ACTION: 'card:action',
+  ORDER_NEXT: 'oreder:next'
 }
 
 export interface IAppEvents {
@@ -27,6 +28,7 @@ export interface IAppEvents {
   'basket:order': {}
   'card:preview': IProduct,
   'card:action': IProduct,
+  'order:next': {}
 }
 
 export interface IEvents {

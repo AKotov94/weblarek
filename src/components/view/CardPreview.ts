@@ -17,7 +17,7 @@ export class CardPreview extends Card {
   }
 
   static create(data: ICardData, events: IEvents): HTMLElement {
-    const template = cloneTemplate<HTMLElement>('#card-preview');
+    const template = cloneTemplate<HTMLTemplateElement>('#card-preview');
     const card = new CardPreview(template, events, data);
     return card.render(data)
   }
@@ -25,7 +25,8 @@ export class CardPreview extends Card {
   protected updateFields(data: ICardData): void {
     super.updateFields(data);
     if (this.cardButton && data.buttonText) {
-      this.cardButton.textContent = data.buttonText
+      this.cardButton.textContent = data.buttonText;
+      this.cardButton.disabled = data.buttonText === 'Недоступно';
     }
   }
 }
