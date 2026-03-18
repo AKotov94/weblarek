@@ -1,4 +1,5 @@
-import { IProduct } from "../../types";
+import { IProduct, TPayment } from "../../types";
+import { BuyerFormField } from "./Form";
 
 // Хорошая практика даже простые типы выносить в алиасы
 // Зато когда захотите поменять это достаточно сделать в одном месте
@@ -17,7 +18,11 @@ export const EVENTS = {
   BASKET_ORDER: 'basket:order',
   CARD_PREVIEW: 'card:preview',
   CARD_ACTION: 'card:action',
-  ORDER_NEXT: 'oreder:next'
+  ORDER_NEXT: 'order:next',
+  ORDER_SUBMIT: 'order:submit',
+  FORM_PAYMENT: 'form:payment',
+  FORM_ACTION: 'form:action',
+  ORDER_SUCCESS: 'order:success'
 }
 
 export interface IAppEvents {
@@ -25,10 +30,14 @@ export interface IAppEvents {
   'modal:close': {},
   'basket:open': {},
   'basket:changed': { items: IProduct[]; total: number },
-  'basket:order': {}
+  'basket:order': {},
   'card:preview': IProduct,
   'card:action': IProduct,
-  'order:next': {}
+  'order:next': {},
+  'order:submit': {},
+  'form:payment': { payment: TPayment },
+  'form:action': { field: BuyerFormField, value: string },
+  'order:success': {}
 }
 
 export interface IEvents {

@@ -13,6 +13,8 @@ import { Modal } from './components/view/Modal';
 import { Presenter } from './components/presenter/Presenter';
 import { BasketView } from './components/view/BasketView';
 import { Order } from './components/view/Order';
+import { Contacts } from './components/view/Contacts';
+import { Success } from './components/view/Success';
 
 const events = new EventEmitter();
 
@@ -28,6 +30,8 @@ const gallery = new Gallery();
 const modal = new Modal(events);
 const basketView = new BasketView(events);
 const order = new Order(events);
+const contacts = new Contacts (events)
+const success = new Success(events)
 
 const presenter = new Presenter(
   events, 
@@ -39,7 +43,9 @@ const presenter = new Presenter(
   gallery,
   modal,
   basketView,
-  order
+  order,
+  contacts,
+  success
 );
 
 presenter.init()

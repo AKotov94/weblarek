@@ -1,4 +1,4 @@
-import { FetchData, IProduct } from "../../types";
+import { FetchData, IOrder, IProduct, OrderResponse } from "../../types";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 import { ApiCommunication } from "../communication/ApiCommunication";
 import { Basket } from "../models/Basket";
@@ -13,21 +13,27 @@ import { CardPreview } from "../view/CardPreview";
 import { CardCatalog } from "../view/CardCatalog";
 import { ICardData } from "../base/Card";
 import { Order } from "../view/Order";
+import { Contacts } from "../view/Contacts";
+import { Success } from "../view/Success";
 
 export class Presenter {
   private currenModalType: 'card-preview' | 'basket' | null = null;
   private currentCardPreviewID: string | null = null;
+  private orderIsTouched: boolean = false;
+  private contactsIsTouched: boolean = false;
   constructor(
     private events: IEvents,
     private api: ApiCommunication,
     private catalog: Catalog,
     private basket: Basket,
-    private byuer: Buyer,
+    private buyer: Buyer,
     private header: Header,
     private gallery: Gallery,
     private modal: Modal,
     private basketView: BasketView,
-    private order: Order
+    private order: Order,
+    private contacts: Contacts,
+    private success: Success
   ) {
     this.events.on<IAppEvents['basket:open']>(EVENTS.BASKET_OPEN, () => {
       this.modal.open( { content: this.renderBasket()} )
@@ -61,7 +67,53 @@ export class Presenter {
       }
     });
     this.events.on<IAppEvents['basket:order']>(EVENTS.BASKET_ORDER, () => {
-      this.modal.render( {content: this.renderOrder()} )
+      const allErros = this.buyer.validateForm()
+      const data = {
+        ...this.buyer.getBuyerData(),
+        errors: {
+          payment: allErros.payment,
+          address: allErros.address
+        },
+        isTouched: this.orderIsTouched
+      }
+      this.modal.render( {content: this.order.render(data)} )
+    });
+    this.events.on<IAppEvents['form:payment']>(EVENTS.ORDER_PAYMENT, data => {
+      this.buyer.setBuyerData('payment', data.payment)
+      this.updateButtonState();
+    });
+    this.events.on<IAppEvents['form:action']>(EVENTS.FORM_ACTION, data => {
+      this.buyer.setBuyerData(data.field, data.value)
+      this.updateButtonState();
+    });
+    this.events.on<IAppEvents['order:next']>(EVENTS.ORDER_NEXT, (data) => {
+      data.formName === 'order' ? this.orderIsTouched = true : this.contactsIsTouched = true
+      const allErros = this.buyer.validateForm()
+      const errors = data.formName === 'order' ?
+        {
+          payment: allErros.payment,
+          address: allErros.address
+        } :
+        {
+          email: allErros.email,
+          phone: allErros.phone
+        }
+
+        const renderData = {
+          ...this.buyer.getBuyerData(),
+          errors
+        }
+        this.validateOrder() ? 
+        this.modal.render({content: this.contacts.render({...renderData, isTouched: this.contactsIsTouched})}) : 
+        this.modal.render({content: this.order.render({...renderData, isTouched: this.orderIsTouched})});
+
+        if (data.formName === 'contacts') {
+          this.sendOrder()
+          .then(response => {
+            this.modal.render( {content: this.success.render(response.total)} );
+            console.log(response);
+          })
+        }
     });
   }
 
@@ -116,15 +168,38 @@ export class Presenter {
     return CardPreview.create(previewData, this.events)
   }
 
-  private renderOrder(): HTMLElement {
-    const allErrors = this.byuer.validateForm()
-    const data = {
-      ...this.byuer.getBuyerData(),
-      errors: {
-        payment: allErrors.payment,
-        address: allErrors.address
-      }
+  private validateOrder(): boolean {
+    const errors = this.buyer.validateForm();
+    return (errors.payment && errors.address) ? false : true
+  }
+
+  private updateButtonState(): void {
+    const data = this.buyer.getBuyerData();
+
+    (data.payment && data.address) ?
+    this.order.setFormButtonDisabled(false) :
+    this.order.setFormButtonDisabled(true);
+
+    (data.email && data.phone) ?
+    this.contacts.setFormButtonDisabled(false) :
+    this.contacts.setFormButtonDisabled(true);
+  }
+
+  private prepareOrder(): IOrder {
+    return {
+      ...this.buyer.getBuyerData(),
+      total: this.basket.getTotalPrice(),
+      items: this.basket.getItems().map(item => item.id)
     }
-    return this.order.render(data)
+  }
+
+  async sendOrder(): Promise<OrderResponse> {
+    const data = this.prepareOrder();
+    try {
+      return await this.api.sendOrder(data);
+    } catch (error) {
+      console.log('Ошибка при получении данных.');
+      throw error
+    }
   }
 }
