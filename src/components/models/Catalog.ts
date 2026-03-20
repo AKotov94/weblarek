@@ -1,10 +1,11 @@
 import { IProduct } from "../../types/index.ts";
+import { EVENTS, IAppEvents, IEvents } from "../base/Events.ts";
 
 export class Catalog {
   private products!: IProduct[];
   private selectedProduct!: IProduct | null;
 
-  constructor () {};
+  constructor (private events: IEvents) {};
 
   getProducts(): IProduct[] {
     return [...this.products];
@@ -20,10 +21,15 @@ export class Catalog {
   };
 
   setProducts(newProducts: IProduct[]): void {
-    this.products = newProducts; // В принципе, LLM советует и в методах set* присваивать копию, а не ссылку, но мне кажется это избыточным
+    this.products = newProducts;
+    this.emitChanged();
   };
 
   setSelectedProduct(product: IProduct): void {
     this.selectedProduct = product;
   };
+
+  private emitChanged(): void {
+    this.events.emit<IAppEvents['catalog:changed']>(EVENTS.CATALOG_CHANGED);
+  }
 }

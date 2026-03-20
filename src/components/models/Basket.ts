@@ -22,6 +22,7 @@ export class Basket {
 
   clearBasket(): void {
     this.items = [];
+    this.emitChanged(); // В целом, под эту конкретную реализацию не нужно
   };
 
   getTotalPrice(): number {
@@ -33,9 +34,6 @@ export class Basket {
   };
 
   private emitChanged(): void {
-    this.events.emit<IAppEvents['basket:changed']>(EVENTS.BASKET_CHANGED,{
-      items: this.getItems(),
-      total: this.getTotalPrice(),
-    })
-  }
+    this.events.emit<IAppEvents['basket:changed']>(EVENTS.BASKET_CHANGED);
+  };
 }

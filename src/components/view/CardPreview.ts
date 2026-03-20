@@ -8,7 +8,6 @@ export class CardPreview extends Card {
     container: HTMLElement, 
     private events: IEvents,
     data: ICardData,
-    // private trigger: (IAppEvents['card:action']) => void
   ) {
     super(container)
     this.cardButton?.addEventListener('click', () => {

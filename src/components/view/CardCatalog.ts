@@ -3,7 +3,7 @@ import { IEvents, EVENTS, IAppEvents } from "../base/Events";
 import { cloneTemplate } from "../../utils/utils";
 
 export class CardCatalog extends Card {
-
+  
   constructor(
     container: HTMLElement,
     private events: IEvents,
@@ -11,8 +11,8 @@ export class CardCatalog extends Card {
   ) {
     super(container);
     this.container.addEventListener('click', () => {
-      this.events.emit<IAppEvents['card:preview']>(EVENTS.CARD_PREVIEW, data);
-  });
+      this.events.emit<IAppEvents['card:open']>(EVENTS.CARD_OPEN, data)
+    });
   }
 
   static create(data: ICardData, events: IEvents): HTMLElement {

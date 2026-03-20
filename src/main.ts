@@ -21,7 +21,7 @@ const events = new EventEmitter();
 const api = new Api(API_URL);
 const apiCommunication = new ApiCommunication(api);
 
-const catalog = new Catalog;
+const catalog = new Catalog(events);
 const basket = new Basket(events);
 const buyer = new Buyer;
 

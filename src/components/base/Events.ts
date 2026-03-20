@@ -1,5 +1,5 @@
-import { IProduct, TPayment } from "../../types";
-import { BuyerFormField } from "./Form";
+import { IProduct } from "../../types";
+import { FormAction } from "./Form";
 
 // Хорошая практика даже простые типы выносить в алиасы
 // Зато когда захотите поменять это достаточно сделать в одном месте
@@ -11,32 +11,34 @@ type EmitterEvent = {
 };
 
 export const EVENTS = {
-  MODAL_OPEN: 'modal:open',
   MODAL_CLOSE: 'modal:close',
   BASKET_OPEN: 'basket:open',
   BASKET_CHANGED: 'basket:changed',
+  CATALOG_CHANGED: 'catalog:changed',
   BASKET_ORDER: 'basket:order',
-  CARD_PREVIEW: 'card:preview',
+  CARD_OPEN: 'card:open',
   CARD_ACTION: 'card:action',
   ORDER_NEXT: 'order:next',
   ORDER_SUBMIT: 'order:submit',
+  FORM_INPUT: 'form:input',
+  FORM_BLUR: 'form:blur',
   FORM_PAYMENT: 'form:payment',
-  FORM_ACTION: 'form:action',
   ORDER_SUCCESS: 'order:success'
-}
+} as const;
 
 export interface IAppEvents {
-  'modal:open': { content: HTMLElement },
   'modal:close': {},
   'basket:open': {},
-  'basket:changed': { items: IProduct[]; total: number },
+  'basket:changed': {},
+  'catalog:changed': {},
   'basket:order': {},
-  'card:preview': IProduct,
+  'card:open': IProduct,
   'card:action': IProduct,
   'order:next': {},
   'order:submit': {},
-  'form:payment': { payment: TPayment },
-  'form:action': { field: BuyerFormField, value: string },
+  'form:input': FormAction,
+  'form:blur': FormAction,
+  'form:payment': FormAction,
   'order:success': {}
 }
 

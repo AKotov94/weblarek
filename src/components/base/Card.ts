@@ -3,15 +3,16 @@ import { IProduct } from "../../types";
 import { ensureElement } from "../../utils/utils";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 
+export type CardButtonText = 'В корзину' | 'Удалить из корзины' | 'Недоступно';
 export interface ICardData extends IProduct {
-  buttonText?: 'В корзину' | 'Удалить из корзины' | 'Недоступно',
+  buttonText?: CardButtonText,
   index?: number
 }
 
 export abstract class Card extends Component<ICardData> {
   protected cardPrice: HTMLElement;
   protected cardTitle: HTMLElement;
-  protected cardImage?: HTMLElement | null;
+  protected cardImage?: HTMLImageElement | null;
   protected cardCategory?: HTMLElement | null;
   protected cardButton?: HTMLButtonElement | null;
   protected cardText?: HTMLElement | null;
@@ -32,14 +33,20 @@ export abstract class Card extends Component<ICardData> {
   protected updateFields(data: ICardData): void {
     this.cardPrice.textContent = data.price !== null ? `${data.price} синапсов` : `Бесценно`;
     this.cardTitle.textContent = data.title;
-    if (this.cardImage) this.setImage(this.cardImage as HTMLImageElement, `${CDN_URL}${data.image}`);
-    if (this.cardCategory) {
-      this.cardCategory.textContent = data.category;
-      const classesToRemove = Array.from(this.cardCategory.classList).filter(cls => cls.startsWith('card__category_'));
-      this.cardCategory.classList.remove(...classesToRemove);
-      this.cardCategory.classList.add(categoryMap[data.category as keyof typeof categoryMap])
-    };
+    
+    if (this.cardImage) this.setImage(this.cardImage, `${CDN_URL}${data.image}`);
+    if (this.cardCategory) this.updateCategory(data.category);
     if (this.cardText) this.cardText.textContent = data.description;
+  }
+
+  private updateCategory(category: string): void {
+    this.cardCategory!.textContent = category;
+    this.cardCategory!.classList.remove(
+      ...Array.from(this.cardCategory!.classList).filter(cls => 
+        cls.startsWith('card__category_')
+      )
+    );
+    this.cardCategory!.classList.add(categoryMap[category as keyof typeof categoryMap])
   }
 
   // Жалко нельзя сделать абстрактный статический метод - по концепции отлично подошел бы

@@ -1,24 +1,23 @@
-
-import { TPayment } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
-import { EVENTS, IAppEvents, IEvents } from "../base/Events";
-import { Form } from "../base/Form";
-
+import { EVENTS, IEvents } from "../base/Events";
+import { Form, IFormData } from "../base/Form";
 
 export class Order extends Form {
+  protected readonly SUBMIT_EVENT = EVENTS.ORDER_NEXT
 
   constructor (events: IEvents) {
     const template = cloneTemplate<HTMLTemplateElement>('#order');
-    super(template, events, 'order');
-    this.paymentButtons!.forEach(element => {
-      element.addEventListener('click', (e) => {
-        const active = e.currentTarget as HTMLButtonElement;
-        const paymentType = element.getAttribute('name');
-        if (!paymentType) return
-        this.events.emit<IAppEvents['form:payment']>(EVENTS.ORDER_PAYMENT, { payment: paymentType  as TPayment });
-        this.paymentButtons!.forEach(btn => btn.classList.add('button_alt'));
-        active.classList.remove('button_alt');
-      })
-    });
+    super(template, events);
+  }
+
+  render(data: IFormData): HTMLElement {
+    super.render(data);
+    const activeButton = this.paymentButtons?.find(
+      button => button.getAttribute('name') === data.payment
+    );
+    if (activeButton && data.payment) {
+      this.toggleButton(activeButton)
+    }
+    return this.container
   }
 }
