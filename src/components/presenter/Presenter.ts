@@ -1,4 +1,10 @@
-import { FetchData, IOrder, IProduct, OrderResponse, TPayment } from "../../types";
+import {
+  FetchData,
+  IOrder,
+  IProduct,
+  OrderResponse,
+  TPayment,
+} from "../../types";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 import { ApiCommunication } from "../communication/ApiCommunication";
 import { Basket } from "../models/Basket";
@@ -11,23 +17,26 @@ import { BasketView } from "../view/BasketView";
 import { CardBasket } from "../view/CardBasket";
 import { CardPreview } from "../view/CardPreview";
 import { CardCatalog } from "../view/CardCatalog";
-import { ICardData } from "../base/Card";
+import { ICardData } from "../view/Card";
 import { Order } from "../view/Order";
 import { Contacts } from "../view/Contacts";
 import { Success } from "../view/Success";
-import { Form, FormAction, IFormData } from "../base/Form";
+import { Form, FormAction, IFormData } from "../view/Form";
 
 type FormsState = {
-  order: { payment: boolean, address: boolean, isTouched: boolean },
-  contacts: { email: boolean, phone: boolean, isTouched: boolean }
-}
+  order: { payment: boolean; address: boolean; isTouched: boolean };
+  contacts: { email: boolean; phone: boolean; isTouched: boolean };
+};
+type Values<T, K extends keyof T> = T[K];
+type FormsEvent = Values<typeof EVENTS, "ORDER_NEXT" | "ORDER_SUBMIT">;
 
 export class Presenter {
-  private currenModalContent: 'card-preview' | 'basket' | null = null;
+  private currentModalContent: "card-preview" | "basket" | "success" | null =
+    null;
   private currentCardPreviewID: string | null = null;
   private formsState: FormsState = {
     order: { payment: false, address: false, isTouched: false },
-    contacts: { email: false, phone: false, isTouched: false }
+    contacts: { email: false, phone: false, isTouched: false },
   };
   constructor(
     private events: IEvents,
@@ -41,93 +50,70 @@ export class Presenter {
     private basketView: BasketView,
     private order: Order,
     private contacts: Contacts,
-    private success: Success
+    private success: Success,
   ) {
     //#1
-    this.events.on<IAppEvents['catalog:changed']>(EVENTS.CATALOG_CHANGED, () => {
-      this.renderGallery(this.catalog.getProducts());
-    });
+    this.events.on<IAppEvents["catalog:changed"]>(
+      EVENTS.CATALOG_CHANGED,
+      () => {
+        this.renderGallery(this.catalog.getProducts());
+      },
+    );
     //#2
-    this.events.on<IAppEvents['card:open']>(EVENTS.CARD_OPEN, (data) => {
+    this.events.on<IAppEvents["card:open"]>(EVENTS.CARD_OPEN, (data) => {
       this.modal.open({ content: this.renderCardPreview(data) });
-      this.currenModalContent = 'card-preview';
+      this.currentModalContent = "card-preview";
     });
     //#3
-    this.events.on<IAppEvents['basket:open']>(EVENTS.BASKET_OPEN, () => {
+    this.events.on<IAppEvents["basket:open"]>(EVENTS.BASKET_OPEN, () => {
       this.modal.open({ content: this.renderBasket() });
-      this.currenModalContent = 'basket';
+      this.currentModalContent = "basket";
     });
-    //#4
-    this.events.on<IAppEvents['modal:close']>(EVENTS.MODAL_CLOSE, () => {
-      this.modal.close();
-      this.currenModalContent = null;
+    //#4, 13
+    [EVENTS.MODAL_CLOSE, EVENTS.ORDER_SUCCESS].forEach((event) => {
+      this.events.on<IAppEvents["modal:close" | "order:success"]>(event, () => {
+        this.modal.close();
+        if (this.currentModalContent === "success") this.clearData();
+        this.currentModalContent = null;
+      });
     });
     //#5
-    this.events.on<IAppEvents['card:action']>(EVENTS.CARD_ACTION, (data) => {
-      this.basket.containsItemById(data.id) ?
-        this.basket.deleteItem(data) :
-        this.basket.addItem(data)
+    this.events.on<IAppEvents["card:action"]>(EVENTS.CARD_ACTION, (data) => {
+      this.basket.containsItemById(data.id)
+        ? this.basket.deleteItem(data)
+        : this.basket.addItem(data);
     });
     //#6
-    this.events.on<IAppEvents['basket:changed']>(EVENTS.BASKET_CHANGED, () => {
+    this.events.on<IAppEvents["basket:changed"]>(EVENTS.BASKET_CHANGED, () => {
       this.header.render({
-        count: this.basket.getItems().length
+        count: this.basket.getItems().length,
       });
       this.updateModal();
     });
     //#7
-    this.events.on<IAppEvents['basket:order']>(EVENTS.BASKET_ORDER, () => {
-      this.modal.render({ content: this.renderForm('order', this.order) });
+    this.events.on<IAppEvents["basket:order"]>(EVENTS.BASKET_ORDER, () => {
+      this.modal.render({ content: this.renderForm("order", this.order) });
     });
     //#8
-    this.events.on<IAppEvents['form:payment']>(EVENTS.FORM_PAYMENT, data => {
-      this.buyer.setBuyerData('payment', data.value as TPayment);
+    this.events.on<IAppEvents["form:payment"]>(EVENTS.FORM_PAYMENT, (data) => {
+      this.buyer.setBuyerData("payment", data.value as TPayment);
       this.formsState.order.payment = true;
       this.updateButtonState();
     });
     //#9
-    this.events.on<IAppEvents['form:input']>(EVENTS.FORM_INPUT, data => {
+    this.events.on<IAppEvents["form:input"]>(EVENTS.FORM_INPUT, (data) => {
       this.setInputState(data);
       this.updateButtonState();
     });
     //#10
-    this.events.on<IAppEvents['form:blur']>(EVENTS.FORM_BLUR, data => {
+    this.events.on<IAppEvents["form:blur"]>(EVENTS.FORM_BLUR, (data) => {
       if (data.field) this.buyer.setBuyerData(data.field, data.value);
-    })
-    //#11
-    this.events.on<IAppEvents['order:next']>(EVENTS.ORDER_NEXT, () => {
-      this.formsState.order.isTouched = true;
-      (this.buyer.validateForm())
-        ? this.modal.render({ content: this.renderForm('order', this.order) })
-        : this.modal.render({ content: this.renderForm('contacts', this.contacts) })
-
-    //   data.formName === 'order' ? this.orderIsTouched = true : this.contactsIsTouched = true
-    //   const allErros = this.buyer.validateForm()
-    //   const errors = data.formName === 'order' ?
-    //     {
-    //       payment: allErros.payment,
-    //       address: allErros.address
-    //     } :
-    //     {
-    //       email: allErros.email,
-    //       phone: allErros.phone
-    //     }
-
-    //     const renderData = {
-    //       ...this.buyer.getBuyerData(),
-    //       errors
-    //     }
-    //     this.validateOrder() ? 
-    //     this.modal.render({content: this.contacts.render({...renderData, isTouched: this.contactsIsTouched})}) : 
-    //     this.modal.render({content: this.order.render({...renderData, isTouched: this.orderIsTouched})});
-
-    //     if (data.formName === 'contacts') {
-    //       this.sendOrder()
-    //       .then(response => {
-    //         this.modal.render( {content: this.success.render(response.total)} );
-    //         console.log(response);
-    //       })
-    //     }
+    });
+    //#11, 12
+    [EVENTS.ORDER_NEXT, EVENTS.ORDER_SUBMIT].forEach((event) => {
+      this.events.on<IAppEvents["order:next" | "order:submit"]>(event, () => {
+        this.handleFormEvent(event);
+      });
     });
   }
 
@@ -138,83 +124,122 @@ export class Presenter {
 
   async loadData(): Promise<FetchData> {
     try {
-    return await this.api.fetchProducts();
-  } catch (error) {
-    console.log('Ошибка при получении данных.');
-    return {
-      total: 0,
-      items: []
+      return await this.api.fetchProducts();
+    } catch (error) {
+      console.log("Ошибка при получении данных.");
+      return {
+        total: 0,
+        items: [],
+      };
     }
   }
-  }
 
-  private renderGallery (data: IProduct[]): void {
-    const cards = data.map(card => {
-      return CardCatalog.create(card, this.events)
-    })
-    this.gallery.render(cards)
+  private renderGallery(data: IProduct[]): void {
+    const cards = data.map((card) => {
+      return CardCatalog.create(card, this.events);
+    });
+    this.gallery.render(cards);
   }
 
   private renderBasket(): HTMLElement {
     const data = this.basket.getItems();
     const price = this.basket.getTotalPrice();
     const cards = data.map((card, index) => {
-      return CardBasket.create( {...card, index}, this.events)
+      return CardBasket.create({ ...card, index }, this.events);
     });
-    return this.basketView.render ({
+    return this.basketView.render({
       items: cards,
-      totalPrice: price
-    })
+      totalPrice: price,
+    });
   }
 
   private renderCardPreview(data: IProduct): HTMLElement {
-    const text = data.price === null ?
-      'Недоступно' :
-      this.basket.containsItemById(data.id) ?
-        'Удалить из корзины' :
-        'В корзину'
+    const text =
+      data.price === null
+        ? "Недоступно"
+        : this.basket.containsItemById(data.id)
+          ? "Удалить из корзины"
+          : "В корзину";
     const previewData: ICardData = {
       ...data,
-      buttonText: text
-    }
-    this.currentCardPreviewID = data.id
-    return CardPreview.create(previewData, this.events)
+      buttonText: text,
+    };
+    this.currentCardPreviewID = data.id;
+    return CardPreview.create(previewData, this.events);
   }
 
-  private renderForm<T extends 'order' | 'contacts'>(
+  private renderForm<T extends "order" | "contacts">(
     formType: T,
-    view: Form
+    view: Form,
   ): HTMLElement {
     const errors = this.buyer.validateForm();
-    const formErrors = formType === 'order'
-      ? { payment: errors.payment, address: errors.address }
-      : { email: errors.email, phone: errors.phone };
+    const formErrors =
+      formType === "order"
+        ? { payment: errors.payment, address: errors.address }
+        : { email: errors.email, phone: errors.phone };
     const data: IFormData = {
       ...this.buyer.getBuyerData(),
       errors: formErrors,
-      isTouched: this.formsState[formType].isTouched
-    }
-    return view.render(data)
+      isTouched: this.formsState[formType].isTouched,
+    };
+    return view.render(data);
   }
 
   private setInputState(data: FormAction) {
-    if (!data.field) return
+    if (!data.field) return;
     const isEmpty = !!data.value;
-    if (data.field  in this.formsState.order) {
-      this.formsState.order[data.field as keyof typeof this.formsState.order ] = isEmpty;
+    if (data.field in this.formsState.order) {
+      this.formsState.order[data.field as keyof typeof this.formsState.order] =
+        isEmpty;
     } else {
-      this.formsState.contacts[data.field as keyof typeof this.formsState.contacts] = isEmpty;
+      this.formsState.contacts[
+        data.field as keyof typeof this.formsState.contacts
+      ] = isEmpty;
     }
   }
-  
-  private updateModal():void {
-    if (!this.currenModalContent) return;
-    let content: HTMLElement | null = null
-    switch (this.currenModalContent) {
-      case 'basket':
+
+  private async handleFormEvent(event: FormsEvent): Promise<void> {
+    const errors = this.buyer.validateForm();
+    switch (event) {
+      case "order:next":
+        this.formsState.order.isTouched = true;
+        if (errors.payment && errors.address) {
+          this.modal.render({ content: this.renderForm("order", this.order) });
+        } else {
+          this.modal.render({
+            content: this.renderForm("contacts", this.contacts),
+          });
+        }
+        break;
+      case "order:submit":
+        this.formsState.contacts.isTouched = true;
+        if (Object.values(errors).some((value) => value)) {
+          this.modal.render({
+            content: this.renderForm("contacts", this.contacts),
+          });
+        } else {
+          try {
+            const res = await this.sendOrder();
+            console.log(
+              `Заказ успешно оформлен. ID: ${res.id}, стоимость: ${res.total}`,
+            );
+            this.modal.render({ content: this.success.render(res.total) });
+            this.currentModalContent = "success";
+          } catch (err) {
+            console.error(`Ошибка при отправке заказа: ${err}`);
+          }
+        }
+    }
+  }
+
+  private updateModal(): void {
+    if (!this.currentModalContent) return;
+    let content: HTMLElement | null = null;
+    switch (this.currentModalContent) {
+      case "basket":
         content = this.renderBasket();
         break;
-      case 'card-preview':
+      case "card-preview":
         if (this.currentCardPreviewID) {
           const card = this.catalog.getProductById(this.currentCardPreviewID);
           if (card) {
@@ -223,25 +248,25 @@ export class Presenter {
         }
         break;
     }
-    if (content) this.modal.render({ content })
+    if (content) this.modal.render({ content });
   }
 
   private updateButtonState(): void {
-    (this.formsState.order.payment && this.formsState.order.address) ?
-    this.order.setFormButtonDisabled(false) :
-    this.order.setFormButtonDisabled(true);
+    this.formsState.order.payment && this.formsState.order.address
+      ? this.order.setFormButtonDisabled(false)
+      : this.order.setFormButtonDisabled(true);
 
-    (this.formsState.contacts.email && this.formsState.contacts.phone) ?
-    this.contacts.setFormButtonDisabled(false) :
-    this.contacts.setFormButtonDisabled(true);
+    this.formsState.contacts.email && this.formsState.contacts.phone
+      ? this.contacts.setFormButtonDisabled(false)
+      : this.contacts.setFormButtonDisabled(true);
   }
 
   private prepareOrder(): IOrder {
     return {
       ...this.buyer.getBuyerData(),
       total: this.basket.getTotalPrice(),
-      items: this.basket.getItems().map(item => item.id)
-    }
+      items: this.basket.getItems().map((item) => item.id),
+    };
   }
 
   async sendOrder(): Promise<OrderResponse> {
@@ -249,8 +274,21 @@ export class Presenter {
     try {
       return await this.api.sendOrder(data);
     } catch (error) {
-      console.log('Ошибка при получении данных.');
-      throw error
+      console.log("Ошибка при получении данных.");
+      throw error;
     }
+  }
+
+  private clearData(): void {
+    this.basket.clearBasket();
+    this.buyer.clearBuyerData();
+    this.header.reset();
+    this.order.reset();
+    this.contacts.reset();
+    this.currentCardPreviewID = null;
+    this.formsState = {
+      order: { payment: false, address: false, isTouched: false },
+      contacts: { email: false, phone: false, isTouched: false },
+    };
   }
 }

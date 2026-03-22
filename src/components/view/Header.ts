@@ -25,4 +25,8 @@ export class Header extends Component<IHeaderData> {
     this.basketCounter.textContent = `${data.count}`
     return this.container
   }
+
+  reset():void {
+    this.render( {count: 0} )
+  }
 }
