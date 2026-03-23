@@ -2,11 +2,7 @@ import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents, EVENTS, IAppEvents } from "../base/Events";
 
-export interface IModalData {
-  content: HTMLElement
-}
-
-export class Modal extends Component<IModalData> {
+export class Modal extends Component<HTMLElement> {
   private modalContent: HTMLElement;
   private modalButtonClose: HTMLButtonElement;
 
@@ -22,9 +18,9 @@ export class Modal extends Component<IModalData> {
     })
   }
 
-  render (data: IModalData): HTMLElement {
+  render (element: HTMLElement): HTMLElement {
     this.modalContent.innerHTML = '';
-    this.modalContent.appendChild(data.content);
+    this.modalContent.appendChild(element);
     return this.container
   }
 
@@ -32,8 +28,8 @@ export class Modal extends Component<IModalData> {
     this.container.classList.remove('modal_active');
   }
 
-  open(data: IModalData): void {
+  open(element: HTMLElement): void {
     this.container.classList.add('modal_active');
-    this.render(data);
+    this.render(element);
   } 
 }

@@ -3,12 +3,12 @@ import { Component } from "../base/Component";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 import { createElement } from "../../utils/utils";
 
-export interface IBasketData {
+export interface IBasketViewData {
   items: HTMLElement[],
   totalPrice: number
 }
 
-export class BasketView extends Component<IBasketData> {
+export class BasketView extends Component<IBasketViewData> {
   private basketList: HTMLElement;
   private basketTotalPrice: HTMLElement;
   private orderButton: HTMLButtonElement;
@@ -24,7 +24,7 @@ export class BasketView extends Component<IBasketData> {
     })
   }
 
-  render(data: IBasketData): HTMLElement {
+  render(data: IBasketViewData): HTMLElement {
     this.basketList.innerHTML = '';
     this.orderButton.disabled = data.items.length === 0;
     if (data.items.length === 0) {

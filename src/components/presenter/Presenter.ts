@@ -29,11 +29,12 @@ type FormsState = {
 };
 type Values<T, K extends keyof T> = T[K];
 type FormsEvent = Values<typeof EVENTS, "ORDER_NEXT" | "ORDER_SUBMIT">;
+type CardID = Values<IProduct, 'id'> | null;
+type ModalContent = "card-preview" | "basket" | "success" | null;
 
 export class Presenter {
-  private currentModalContent: "card-preview" | "basket" | "success" | null =
-    null;
-  private currentCardPreviewID: string | null = null;
+  private currentModalContent: ModalContent = null;
+  private currentCardPreviewID: CardID = null;
   private formsState: FormsState = {
     order: { payment: false, address: false, isTouched: false },
     contacts: { email: false, phone: false, isTouched: false },
@@ -52,24 +53,24 @@ export class Presenter {
     private contacts: Contacts,
     private success: Success,
   ) {
-    //#1
+    
     this.events.on<IAppEvents["catalog:changed"]>(
       EVENTS.CATALOG_CHANGED,
       () => {
         this.renderGallery(this.catalog.getProducts());
       },
     );
-    //#2
+    
     this.events.on<IAppEvents["card:open"]>(EVENTS.CARD_OPEN, (data) => {
-      this.modal.open({ content: this.renderCardPreview(data) });
+      this.modal.open(this.renderCardPreview(data));
       this.currentModalContent = "card-preview";
     });
-    //#3
+    
     this.events.on<IAppEvents["basket:open"]>(EVENTS.BASKET_OPEN, () => {
-      this.modal.open({ content: this.renderBasket() });
+      this.modal.open(this.renderBasket());
       this.currentModalContent = "basket";
     });
-    //#4, 13
+    
     [EVENTS.MODAL_CLOSE, EVENTS.ORDER_SUCCESS].forEach((event) => {
       this.events.on<IAppEvents["modal:close" | "order:success"]>(event, () => {
         this.modal.close();
@@ -77,39 +78,37 @@ export class Presenter {
         this.currentModalContent = null;
       });
     });
-    //#5
+    
     this.events.on<IAppEvents["card:action"]>(EVENTS.CARD_ACTION, (data) => {
       this.basket.containsItemById(data.id)
         ? this.basket.deleteItem(data)
         : this.basket.addItem(data);
     });
-    //#6
+    
     this.events.on<IAppEvents["basket:changed"]>(EVENTS.BASKET_CHANGED, () => {
-      this.header.render({
-        count: this.basket.getItems().length,
-      });
+      this.header.render(this.basket.getItems().length);
       this.updateModal();
     });
-    //#7
+    
     this.events.on<IAppEvents["basket:order"]>(EVENTS.BASKET_ORDER, () => {
-      this.modal.render({ content: this.renderForm("order", this.order) });
+      this.modal.render(this.renderForm("order", this.order));
     });
-    //#8
+    
     this.events.on<IAppEvents["form:payment"]>(EVENTS.FORM_PAYMENT, (data) => {
       this.buyer.setBuyerData("payment", data.value as TPayment);
       this.formsState.order.payment = true;
       this.updateButtonState();
     });
-    //#9
+    
     this.events.on<IAppEvents["form:input"]>(EVENTS.FORM_INPUT, (data) => {
       this.setInputState(data);
       this.updateButtonState();
     });
-    //#10
+    
     this.events.on<IAppEvents["form:blur"]>(EVENTS.FORM_BLUR, (data) => {
       if (data.field) this.buyer.setBuyerData(data.field, data.value);
     });
-    //#11, 12
+    
     [EVENTS.ORDER_NEXT, EVENTS.ORDER_SUBMIT].forEach((event) => {
       this.events.on<IAppEvents["order:next" | "order:submit"]>(event, () => {
         this.handleFormEvent(event);
@@ -122,7 +121,7 @@ export class Presenter {
     this.catalog.setProducts(fetchData.items);
   }
 
-  async loadData(): Promise<FetchData> {
+  private async loadData(): Promise<FetchData> {
     try {
       return await this.api.fetchProducts();
     } catch (error) {
@@ -131,7 +130,7 @@ export class Presenter {
         total: 0,
         items: [],
       };
-    }
+    };
   }
 
   private renderGallery(data: IProduct[]): void {
@@ -170,7 +169,7 @@ export class Presenter {
 
   private renderForm<T extends "order" | "contacts">(
     formType: T,
-    view: Form,
+    view: Form
   ): HTMLElement {
     const errors = this.buyer.validateForm();
     const formErrors =
@@ -185,7 +184,7 @@ export class Presenter {
     return view.render(data);
   }
 
-  private setInputState(data: FormAction) {
+  private setInputState(data: FormAction): void {
     if (!data.field) return;
     const isEmpty = !!data.value;
     if (data.field in this.formsState.order) {
@@ -195,7 +194,7 @@ export class Presenter {
       this.formsState.contacts[
         data.field as keyof typeof this.formsState.contacts
       ] = isEmpty;
-    }
+    };
   }
 
   private async handleFormEvent(event: FormsEvent): Promise<void> {
@@ -204,32 +203,28 @@ export class Presenter {
       case "order:next":
         this.formsState.order.isTouched = true;
         if (errors.payment && errors.address) {
-          this.modal.render({ content: this.renderForm("order", this.order) });
+          this.modal.render(this.renderForm("order", this.order));
         } else {
-          this.modal.render({
-            content: this.renderForm("contacts", this.contacts),
-          });
+          this.modal.render(this.renderForm("contacts", this.contacts));
         }
         break;
       case "order:submit":
         this.formsState.contacts.isTouched = true;
         if (Object.values(errors).some((value) => value)) {
-          this.modal.render({
-            content: this.renderForm("contacts", this.contacts),
-          });
+          this.modal.render(this.renderForm("contacts", this.contacts));
         } else {
           try {
             const res = await this.sendOrder();
             console.log(
               `Заказ успешно оформлен. ID: ${res.id}, стоимость: ${res.total}`,
             );
-            this.modal.render({ content: this.success.render(res.total) });
+            this.modal.render(this.success.render(res.total));
             this.currentModalContent = "success";
           } catch (err) {
             console.error(`Ошибка при отправке заказа: ${err}`);
-          }
-        }
-    }
+          };
+        };
+    };
   }
 
   private updateModal(): void {
@@ -247,8 +242,9 @@ export class Presenter {
           }
         }
         break;
+      default: return;
     }
-    if (content) this.modal.render({ content });
+    if (content) this.modal.render(content);
   }
 
   private updateButtonState(): void {
