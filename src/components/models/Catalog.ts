@@ -27,7 +27,10 @@ export class Catalog {
 
   setSelectedProduct(product: IProduct): void {
     this.selectedProduct = product;
+    this.events.emit<IAppEvents['catalog:selected']>(EVENTS.CATALOG_SELECTED, product);
   };
+
+  // emitChanged() сделал методом, т.к. потенциально может быть переиспользовано в будущем, эмит в setSelectedProduct добавил напрямую, т.к. это довольно специальное событие.
 
   private emitChanged(): void {
     this.events.emit<IAppEvents['catalog:changed']>(EVENTS.CATALOG_CHANGED);

@@ -61,13 +61,13 @@ export class Presenter {
       },
     );
     
-    this.events.on<IAppEvents["card:open"]>(EVENTS.CARD_OPEN, (data) => {
-      this.modal.open(this.renderCardPreview(data));
+    this.events.on<IAppEvents["card:select"]>(EVENTS.CARD_OPEN, (data) => {
+      this.modal.open({ content: this.renderCardPreview(data) });
       this.currentModalContent = "card-preview";
     });
     
     this.events.on<IAppEvents["basket:open"]>(EVENTS.BASKET_OPEN, () => {
-      this.modal.open(this.renderBasket());
+      this.modal.open({ content: this.renderBasket() });
       this.currentModalContent = "basket";
     });
     
@@ -86,12 +86,12 @@ export class Presenter {
     });
     
     this.events.on<IAppEvents["basket:changed"]>(EVENTS.BASKET_CHANGED, () => {
-      this.header.render(this.basket.getItems().length);
+      this.header.render({ counter: this.basket.getItems().length });
       this.updateModal();
     });
     
     this.events.on<IAppEvents["basket:order"]>(EVENTS.BASKET_ORDER, () => {
-      this.modal.render(this.renderForm("order", this.order));
+      this.modal.render({ content: this.renderForm("order", this.order) });
     });
     
     this.events.on<IAppEvents["form:payment"]>(EVENTS.FORM_PAYMENT, (data) => {
@@ -135,9 +135,10 @@ export class Presenter {
 
   private renderGallery(data: IProduct[]): void {
     const cards = data.map((card) => {
-      return CardCatalog.create(card, this.events);
+      const item = new CardCatalog({ onclick: () => this.events.emit<IAppEvents['card:select']>(EVENTS.CARD_SELECT), card });
+      return item.render(card);
     });
-    this.gallery.render(cards);
+    this.gallery.render({ items: cards });
   }
 
   private renderBasket(): HTMLElement {
@@ -147,8 +148,8 @@ export class Presenter {
       return CardBasket.create({ ...card, index }, this.events);
     });
     return this.basketView.render({
-      items: cards,
-      totalPrice: price,
+      content: cards,
+      total: price,
     });
   }
 
@@ -203,22 +204,22 @@ export class Presenter {
       case "order:next":
         this.formsState.order.isTouched = true;
         if (errors.payment && errors.address) {
-          this.modal.render(this.renderForm("order", this.order));
+          this.modal.render({ content: this.renderForm("order", this.order) });
         } else {
-          this.modal.render(this.renderForm("contacts", this.contacts));
+          this.modal.render({ content: this.renderForm("contacts", this.contacts)});
         }
         break;
       case "order:submit":
         this.formsState.contacts.isTouched = true;
         if (Object.values(errors).some((value) => value)) {
-          this.modal.render(this.renderForm("contacts", this.contacts));
+          this.modal.render({ content: this.renderForm("contacts", this.contacts) });
         } else {
           try {
             const res = await this.sendOrder();
             console.log(
               `Заказ успешно оформлен. ID: ${res.id}, стоимость: ${res.total}`,
             );
-            this.modal.render(this.success.render(res.total));
+            this.modal.render({ content: this.success.render(res.total) });
             this.currentModalContent = "success";
           } catch (err) {
             console.error(`Ошибка при отправке заказа: ${err}`);
@@ -244,7 +245,7 @@ export class Presenter {
         break;
       default: return;
     }
-    if (content) this.modal.render(content);
+    if (content) this.modal.render({ content });
   }
 
   private updateButtonState(): void {

@@ -1,7 +1,7 @@
 import { Component } from "../base/Component";
 import { IProduct } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { categoryMap, CDN_URL } from "../../utils/constants";
+import { categoryMap } from "../../utils/constants";
 
 export type CardButtonText = "В корзину" | "Удалить из корзины" | "Недоступно";
 export interface ICardData extends IProduct {
@@ -30,18 +30,16 @@ export abstract class Card extends Component<ICardData> {
     this.cardIndex = this.container.querySelector(".basket__item-index");
   }
 
-  protected updateFields(data: ICardData): void {
+  set price(value: number | null) {
     this.cardPrice.textContent =
-      data.price !== null ? `${data.price} синапсов` : `Бесценно`;
-    this.cardTitle.textContent = data.title;
-
-    if (this.cardImage)
-      this.setImage(this.cardImage, `${CDN_URL}${data.image}`);
-    if (this.cardCategory) this.updateCategory(data.category);
-    if (this.cardText) this.cardText.textContent = data.description;
+      value !== null ? `${value} синапсов` : `Бесценно`;
   }
 
-  private updateCategory(category: string): void {
+  set title(content: string) {
+    this.cardTitle.textContent = content;
+  }
+
+  protected updateCategory(category: string): void {
     this.cardCategory!.textContent = category;
     this.cardCategory!.classList.remove(
       ...Array.from(this.cardCategory!.classList).filter((cls) =>
@@ -51,13 +49,5 @@ export abstract class Card extends Component<ICardData> {
     this.cardCategory!.classList.add(
       categoryMap[category as keyof typeof categoryMap],
     );
-  }
-
-  // Жалко нельзя сделать абстрактный статический метод - по концепции отлично подошел бы
-
-  render(data: ICardData): HTMLElement {
-    super.render(data);
-    this.updateFields(data);
-    return this.container;
   }
 }

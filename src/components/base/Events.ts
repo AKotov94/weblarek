@@ -1,4 +1,4 @@
-import { IProduct } from "../../types";
+import { IBuyer, IProduct } from "../../types";
 import { FormAction } from "../view/Form";
 
 // Хорошая практика даже простые типы выносить в алиасы
@@ -11,12 +11,14 @@ type EmitterEvent = {
 };
 
 export const EVENTS = {
+  BASKET_CHANGED: "basket:changed", // +
+  CATALOG_CHANGED: "catalog:changed", // +
+  CATALOG_SELECTED: "catalog:selected",
+  BUYER_CHANGED: "buyer:changed",
   MODAL_CLOSE: "modal:close",
   BASKET_OPEN: "basket:open",
-  BASKET_CHANGED: "basket:changed",
-  CATALOG_CHANGED: "catalog:changed",
   BASKET_ORDER: "basket:order",
-  CARD_OPEN: "card:open",
+  CARD_SELECT: "card:select",
   CARD_ACTION: "card:action",
   ORDER_NEXT: "order:next",
   ORDER_SUBMIT: "order:submit",
@@ -27,12 +29,14 @@ export const EVENTS = {
 } as const;
 
 export interface IAppEvents {
-  "modal:close": {};
-  "basket:open": {};
   "basket:changed": {};
   "catalog:changed": {};
+  "catalog:selected": IProduct;
+  "buyer:changed": Partial<IBuyer>;
+  "modal:close": {};
+  "basket:open": {};
   "basket:order": {};
-  "card:open": IProduct;
+  "card:select": IProduct;
   "card:action": IProduct;
   "order:next": {};
   "order:submit": {};

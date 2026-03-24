@@ -4,8 +4,8 @@ import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 import { createElement } from "../../utils/utils";
 
 export interface IBasketViewData {
-  items: HTMLElement[],
-  totalPrice: number
+  content: HTMLElement[],
+  total: number
 }
 
 export class BasketView extends Component<IBasketViewData> {
@@ -24,20 +24,22 @@ export class BasketView extends Component<IBasketViewData> {
     })
   }
 
-  render(data: IBasketViewData): HTMLElement {
+  set content(items: HTMLElement[]) {
     this.basketList.innerHTML = '';
-    this.orderButton.disabled = data.items.length === 0;
-    if (data.items.length === 0) {
+    this.orderButton.disabled = items.length === 0;
+    if (items.length === 0) {
       this.basketList.appendChild(this.renderEmpty());
       } else {
-      data.items.forEach((card)=> {
+      items.forEach((card)=> {
         this.basketList.appendChild(card);
       })
     }
-    this.basketTotalPrice.textContent = `${data.totalPrice} синапсов`
-    return this.container
-  }
+  };
 
+  set total(price: number) {
+    this.basketTotalPrice.textContent = `${price} синапсов`
+  }
+  
   private renderEmpty(): HTMLElement {
     return createElement('div',
       // Да, инлайново, но захотелось отцентровать :)

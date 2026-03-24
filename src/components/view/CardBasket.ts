@@ -14,16 +14,13 @@ export class CardBasket extends Card {
     });
   }
 
+  set index(value: number) {
+    this.cardIndex!.textContent = `${value + 1}`
+  }
+
   static create(data: ICardData, events: IEvents): HTMLElement {
     const template = cloneTemplate<HTMLElement>("#card-basket");
     const card = new CardBasket(template, events, data);
     return card.render(data);
-  }
-
-  protected updateFields(data: ICardData): void {
-    super.updateFields(data);
-    if (this.cardIndex && data.index) {
-      this.cardIndex.textContent = `${data.index + 1}`;
-    }
   }
 }

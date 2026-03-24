@@ -1,17 +1,20 @@
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 
-export class Gallery extends Component<HTMLElement[]> {
+interface IViewGallery {
+  items: HTMLElement[]
+}
+
+export class Gallery extends Component<IViewGallery> {
   constructor() {
     const container = ensureElement('.gallery')
     super(container);
   }
 
-  render(cards: HTMLElement[]):HTMLElement {
+  set items(cards: HTMLElement[]) {
     this.container.innerHTML = '';
     cards.forEach(card => {
       this.container.appendChild(card)
     });
-    return this.container
-  };
+  }
 }

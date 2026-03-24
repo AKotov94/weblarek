@@ -15,6 +15,7 @@ import { BasketView } from './components/view/BasketView';
 import { Order } from './components/view/Order';
 import { Contacts } from './components/view/Contacts';
 import { Success } from './components/view/Success';
+import { IProduct } from './types';
 
 const events = new EventEmitter();
 
@@ -23,7 +24,7 @@ const apiCommunication = new ApiCommunication(api);
 
 const catalog = new Catalog(events);
 const basket = new Basket(events);
-const buyer = new Buyer;
+const buyer = new Buyer(events);
 
 const header = new Header(events);
 const gallery = new Gallery();
@@ -47,5 +48,9 @@ const presenter = new Presenter(
   contacts,
   success
 );
+
+function renderGallery(data: IProduct) {
+  
+}
 
 presenter.init()

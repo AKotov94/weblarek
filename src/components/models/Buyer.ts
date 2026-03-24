@@ -1,4 +1,5 @@
 import { IBuyer,ValidationErrors } from "../../types/";
+import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 
 const defoltBuyer: IBuyer = {
   payment: null,
@@ -10,8 +11,11 @@ const defoltBuyer: IBuyer = {
 export class Buyer {
   private buyer: IBuyer = {...defoltBuyer};
 
+  constructor (private events: IEvents) {};
+
   setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void {
     this.buyer[key] = value;
+    this.emitChanged(key);
   };
 
   getBuyerData(): IBuyer {
@@ -20,6 +24,7 @@ export class Buyer {
 
   clearBuyerData(): void {
     this.buyer = {...defoltBuyer};
+    // Наверное, для clear должно быть свое событие (у каждой модели), но в этой реализации не используется
   };
 
   validateForm(): ValidationErrors {
@@ -38,4 +43,8 @@ export class Buyer {
     };
     return errors;
   }
+
+  private emitChanged<K extends keyof IBuyer>(key: K): void {
+    this.events.emit<IAppEvents['buyer:changed']>(EVENTS.BUYER_CHANGED, { [key]: this.buyer[key] });
+  };
 }

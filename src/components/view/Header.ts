@@ -2,7 +2,11 @@ import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents, EVENTS, IAppEvents } from "../base/Events";
 
-export class Header extends Component<number> {
+interface IViewHeader {
+  counter: number
+}
+
+export class Header extends Component<IViewHeader> {
   private basketCounter: HTMLElement;
   private basketButton: HTMLButtonElement;
   
@@ -17,12 +21,11 @@ export class Header extends Component<number> {
     });
   };
 
-  render(count: number): HTMLElement {
-    this.basketCounter.textContent = `${count}`
-    return this.container
+  set counter(value: number) {
+    this.basketCounter.textContent = `${value}`
   }
 
   reset():void {
-    this.render(0);
+    this.render({ counter: 0 });
   }
 }

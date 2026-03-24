@@ -2,7 +2,11 @@ import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents, EVENTS, IAppEvents } from "../base/Events";
 
-export class Modal extends Component<HTMLElement> {
+interface IViewModal {
+  content: HTMLElement
+}
+
+export class Modal extends Component<IViewModal> {
   private modalContent: HTMLElement;
   private modalButtonClose: HTMLButtonElement;
 
@@ -18,18 +22,17 @@ export class Modal extends Component<HTMLElement> {
     })
   }
 
-  render (element: HTMLElement): HTMLElement {
+  set content(element: HTMLElement) {
     this.modalContent.innerHTML = '';
     this.modalContent.appendChild(element);
-    return this.container
   }
 
   close(): void {
     this.container.classList.remove('modal_active');
   }
 
-  open(element: HTMLElement): void {
+  open(content: IViewModal): void {
     this.container.classList.add('modal_active');
-    this.render(element);
+    this.render(content);
   } 
 }
