@@ -2,7 +2,7 @@ import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents, EVENTS, IAppEvents } from "../base/Events";
 
-interface IViewModal {
+export interface IViewModal {
   content: HTMLElement
 }
 

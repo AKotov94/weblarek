@@ -1,26 +1,20 @@
+import { ICardActions } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
-import { Card, ICardData } from "./Card";
-import { EVENTS, IAppEvents, IEvents } from "../base/Events";
+import { Card, TCardData } from "./Card";
 
-export class CardBasket extends Card {
-  constructor(
-    container: HTMLElement,
-    private events: IEvents,
-    data: ICardData,
-  ) {
-    super(container);
-    this.cardButton?.addEventListener("click", () => {
-      this.events.emit<IAppEvents["card:action"]>(EVENTS.CARD_ACTION, data);
-    });
+export type TCardBasket = Required<Pick<TCardData, 'title' | 'price' | 'index'>>
+
+export class CardBasket extends Card<TCardBasket> {
+  constructor(actions?: ICardActions) {
+    const template = cloneTemplate<HTMLElement>("#card-basket");
+    super(template);
+    if (actions?.onClick) {
+      this.cardButton?.addEventListener("click", actions.onClick);
+    }
   }
 
   set index(value: number) {
-    this.cardIndex!.textContent = `${value + 1}`
-  }
-
-  static create(data: ICardData, events: IEvents): HTMLElement {
-    const template = cloneTemplate<HTMLElement>("#card-basket");
-    const card = new CardBasket(template, events, data);
-    return card.render(data);
+    if (this.cardIndex)
+    this.cardIndex.textContent = `${value + 1}`
   }
 }

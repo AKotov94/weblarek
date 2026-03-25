@@ -1,4 +1,4 @@
-import { IBuyer, TPayment, ValidationErrors } from "../../types";
+import { IBuyer, TPayment } from "../../types";
 import { ensureAllElements, ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
@@ -7,12 +7,13 @@ export type FormAction = {
   field?: keyof IBuyer;
   value: TPayment | string;
 };
-export interface IFormData extends IBuyer {
-  errors: ValidationErrors;
-  isTouched: boolean;
-}
+export type TFormData =
+  Partial<IBuyer> &
+  {
+    errorMessage: string;
+  }
 
-export abstract class Form extends Component<IFormData> {
+export abstract class Form<T extends TFormData> extends Component<T> {
   protected formInputs: HTMLInputElement[];
   protected formButton: HTMLButtonElement;
   protected formErrors: HTMLElement;
@@ -28,23 +29,11 @@ export abstract class Form extends Component<IFormData> {
     protected events: IEvents,
   ) {
     super(container);
-    this.formInputs = ensureAllElements<HTMLInputElement>(
-      ".form__input",
-      this.container,
-    );
-    this.formButton = ensureElement<HTMLButtonElement>(
-      'button[type="submit"]',
-      this.container,
-    );
-    this.formErrors = ensureElement<HTMLElement>(
-      ".form__errors",
-      this.container,
-    );
+    this.formInputs = ensureAllElements<HTMLInputElement>(".form__input", this.container);
+    this.formButton = ensureElement<HTMLButtonElement>('button[type="submit"]', this.container);
+    this.formErrors = ensureElement<HTMLElement>(".form__errors", this.container);
 
-    this.paymentButtons = ensureAllElements<HTMLButtonElement>(
-      'button[name="card"], button[name="cash"]',
-      this.container,
-    );
+    this.paymentButtons = ensureAllElements<HTMLButtonElement>('button[name="card"], button[name="cash"]', this.container);
 
     this.container.addEventListener("submit", (e: Event) => {
       e.preventDefault();
@@ -58,52 +47,60 @@ export abstract class Form extends Component<IFormData> {
           value: input.value,
         });
       });
-      input.addEventListener("blur", () => {
-        this.events.emit<IAppEvents["form:blur"]>(EVENTS.FORM_BLUR, {
-          field: input.name as keyof IBuyer,
-          value: input.value,
-        });
+
+      Object.defineProperty(this, input.name, {
+        set (value:string) {
+          input.value = value
+        },
+        configurable: true,
+        enumerable: true
       });
     });
 
     this.paymentButtons.forEach((button) => {
       button.addEventListener("click", (e) => {
-        const paymentType = button.getAttribute("name") as TPayment;
+        const target = e.currentTarget as HTMLButtonElement;
+        const paymentType = target.getAttribute("name") as TPayment;
         this.events.emit<IAppEvents["form:payment"]>(EVENTS.FORM_PAYMENT, {
           value: paymentType,
         });
-        this.toggleButton(e.currentTarget as HTMLButtonElement);
       });
     });
   }
 
-  render(data: IFormData): HTMLElement {
-    super.render(data);
-    this.formInputs.forEach((input) => {
-      const name = input.name as keyof IBuyer;
-      // if (data[name]) {
-      //   input.value = data[name];
-      // }
-      if (name in data) {
-        input.value = data[name] ?? "";
-      }
-    });
-    this.renderErrors(data.errors, data.isTouched);
-    return this.container;
+  
+  
+  set errorMessage(err: string) {
+    this.formErrors.textContent = err
   }
 
-  protected renderErrors(errors: ValidationErrors, isTouched: boolean): void {
-    const errorMessages = Object.values(errors).filter(Boolean);
-    if (isTouched && errorMessages.length > 0) {
-      this.formErrors.textContent = errorMessages.join(", ");
-    } else {
-      this.formErrors.textContent = "";
-    }
-  }
+  // render(data: IFormData): HTMLElement {
+  //   super.render(data);
+  //   this.formInputs.forEach((input) => {
+  //     const name = input.name as keyof IBuyer;
+  //     // if (data[name]) {
+  //     //   input.value = data[name];
+  //     // }
+  //     if (name in data) {
+  //       input.value = data[name] ?? "";
+  //     }
+  //   });
+  //   this.renderErrors(data.errors, data.isTouched);
+  //   return this.container;
+  // }
 
-  setFormButtonDisabled(disabled: boolean): void {
-    this.formButton.disabled = disabled;
-  }
+  // protected renderErrors(errors: ValidationErrors, isTouched: boolean): void {
+  //   const errorMessages = Object.values(errors).filter(Boolean);
+  //   if (isTouched && errorMessages.length > 0) {
+  //     this.formErrors.textContent = errorMessages.join(", ");
+  //   } else {
+  //     this.formErrors.textContent = "";
+  //   }
+  // }
+
+  // setFormButtonDisabled(disabled: boolean): void {
+  //   this.formButton.disabled = disabled;
+  // }
 
   toggleButton(activeButton: HTMLButtonElement): void {
     this.paymentButtons?.forEach((button) => {
@@ -111,15 +108,15 @@ export abstract class Form extends Component<IFormData> {
     });
   }
 
-  reset(): void {
-    this.formInputs.forEach((input) => {
-      input.value = "";
-    });
-    if (this.paymentButtons) {
-      this.paymentButtons.forEach((button) => {
-        button.classList.add("button_alt");
-        this.setFormButtonDisabled(true);
-      });
-    }
-  }
+  // reset(): void {
+  //   this.formInputs.forEach((input) => {
+  //     input.value = "";
+  //   });
+  //   if (this.paymentButtons) {
+  //     this.paymentButtons.forEach((button) => {
+  //       button.classList.add("button_alt");
+  //       this.setFormButtonDisabled(true);
+  //     });
+  //   }
+  // }
 }

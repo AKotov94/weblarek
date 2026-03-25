@@ -1,18 +1,17 @@
 import { cloneTemplate } from "../../utils/utils";
-import { Card, CardButtonText, ICardData } from "./Card";
-import { EVENTS, IAppEvents, IEvents } from "../base/Events";
+import { Card, CardButtonText, TCardData } from "./Card";
 import { CDN_URL } from "../../utils/constants";
+import { ICardActions } from "../../types";
 
-export class CardPreview extends Card {
-  constructor(
-    container: HTMLElement,
-    private events: IEvents,
-    data: ICardData,
-  ) {
-    super(container);
-    this.cardButton?.addEventListener("click", () => {
-      this.events.emit<IAppEvents["card:action"]>(EVENTS.CARD_ACTION, data);
-    });
+export type TCardPreview = Required<Pick<TCardData, 'title' | 'price' | 'image' | 'category' | 'description' | 'buttonText'>>
+
+export class CardPreview extends Card<TCardPreview> {
+  constructor(actions?: ICardActions) {
+    const template = cloneTemplate<HTMLTemplateElement>("#card-preview");
+    super(template);
+    if (actions?.onClick) {
+      this.cardButton?.addEventListener("click", actions.onClick);
+    }
   }
 
   set image(src: string) {
@@ -24,17 +23,14 @@ export class CardPreview extends Card {
   }
 
   set description(content: string) {
-    this.cardText!.textContent = content;
+    if (this.cardText)
+    this.cardText.textContent = content;
   }
 
   set buttonText(content: CardButtonText) {
-    this.cardButton!.textContent = content;
-    this.cardButton!.disabled = content === "Недоступно";
-  }
-
-  static create(data: ICardData, events: IEvents): HTMLElement {
-    const template = cloneTemplate<HTMLTemplateElement>("#card-preview");
-    const card = new CardPreview(template, events, data);
-    return card.render(data);
+    if (this.cardButton) {
+      this.cardButton.textContent = content;
+    this.cardButton.disabled = content === "Недоступно";
+    }
   }
 }

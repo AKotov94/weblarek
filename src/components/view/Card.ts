@@ -1,15 +1,19 @@
 import { Component } from "../base/Component";
-import { IProduct } from "../../types";
 import { ensureElement } from "../../utils/utils";
 import { categoryMap } from "../../utils/constants";
+import { IProduct } from "../../types";
 
 export type CardButtonText = "В корзину" | "Удалить из корзины" | "Недоступно";
-export interface ICardData extends IProduct {
-  buttonText?: CardButtonText;
-  index?: number;
-}
+export type TCardData = 
+  Pick<IProduct, 'title' | 'price'> &
+  Partial<Omit<IProduct, 'title' | 'price' | 'id'>> &
+  {
+    buttonText?: CardButtonText;
+    index?: number
+  }
 
-export abstract class Card extends Component<ICardData> {
+
+export abstract class Card<T extends TCardData> extends Component<T> {
   protected cardPrice: HTMLElement;
   protected cardTitle: HTMLElement;
   protected cardImage?: HTMLImageElement | null;
@@ -40,14 +44,15 @@ export abstract class Card extends Component<ICardData> {
   }
 
   protected updateCategory(category: string): void {
-    this.cardCategory!.textContent = category;
-    this.cardCategory!.classList.remove(
+    if (this.cardCategory) {
+    this.cardCategory.textContent = category;
+    this.cardCategory.classList.remove(
       ...Array.from(this.cardCategory!.classList).filter((cls) =>
         cls.startsWith("card__category_"),
       ),
     );
-    this.cardCategory!.classList.add(
+    this.cardCategory.classList.add(
       categoryMap[category as keyof typeof categoryMap],
-    );
+    )};
   }
 }
