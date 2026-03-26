@@ -11,9 +11,9 @@ export class Gallery extends Component<IViewGallery> {
     super(container);
   }
 
-  set items(cards: HTMLElement[]) {
+  set items(value: HTMLElement[]) {
     this.container.innerHTML = '';
-    cards.forEach(card => {
+    value.forEach(card => {
       this.container.appendChild(card)
     });
   }

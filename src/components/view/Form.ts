@@ -52,8 +52,9 @@ export abstract class Form<T extends TFormData> extends Component<T> {
         set (value:string) {
           input.value = value
         },
-        configurable: true,
+        configurable: true, 
         enumerable: true
+        // Я по документации не совсем понял, нужно ли включать для Object.assign, но на всякий случай включил
       });
     });
 
@@ -68,8 +69,8 @@ export abstract class Form<T extends TFormData> extends Component<T> {
     });
   }
 
-  set errorMessage(err: string) {
-    this.formErrors.textContent = err
+  set errorMessage(value: string) {
+    this.formErrors.textContent = value
   }
 
   setFormButtonDisabled(disabled: boolean): void {
@@ -91,7 +92,7 @@ export abstract class Form<T extends TFormData> extends Component<T> {
         button.classList.add("button_alt");
       });
     };
-    this,this.errorMessage = '';
+    this.errorMessage = '';
     this.setFormButtonDisabled(true);
   }
 }

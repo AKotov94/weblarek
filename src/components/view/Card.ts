@@ -39,8 +39,8 @@ export abstract class Card<T extends TCardData> extends Component<T> {
       value !== null ? `${value} синапсов` : `Бесценно`;
   }
 
-  set title(content: string) {
-    this.cardTitle.textContent = content;
+  set title(value: string) {
+    this.cardTitle.textContent = value;
   }
 
   protected updateCategory(category: string): void {

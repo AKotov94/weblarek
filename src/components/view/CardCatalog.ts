@@ -14,9 +14,9 @@ export class CardCatalog extends Card<TCardCatalog> {
     }
   }
 
-  set image(src: string) {
+  set image(value: string) {
     if (this.cardImage)
-    this.setImage(this.cardImage, `${CDN_URL}${src}`);
+    this.setImage(this.cardImage, `${CDN_URL}${value}`);
   }
 
   set category(value: string) {

@@ -101,18 +101,19 @@ Presenter - презентер содержит основную логику п
 #### Интерфейс IAppEvents
 Тип возможных в приложении событий.
 
-`"modal:close": {}` - закрытие модального окна.
-`"basket:open": {}` - открытие корзины.
 `"basket:changed": {}` - изменение данных о составе корзины.
 `"catalog:changed": {}` - изменение данных о составе каталога.
-`"card:open": IProduct` - открытие карточки товара для предпросомотра.
-`"card:action": IProduct` - добавление / удаление товара из карточки.
+`"catalog:selected": IProduct` - выбор карточки в модели данных.
+`"buyer:changed": Partial<IBuyer>` - изменение модели данных о покупателе
+`"modal:close": {}` - закрытие модального окна.
+`"basket:open": {}` - открытие корзины.
 `"basket:order": {}` - переход к оформлению заказа из корзины.
-`"form:input": FormAction` - заполнение пользователем поля формы (событие не инициирует запись в модель данных).
-`"form:blur": FormAction` - заполнение пользователем поля формы (с последующей записью в модель данных).
-`"form:payment": FormAction` - выбор пользоваталем вида оплаты.
+`"card:select": IProduct` - выбор пользователем карточки товара.
+`"card:action": IProduct` - добавление / удаление товара из карточки.
 `"order:next": {}` - переход на следующий шаг оформления заказа.
 `"order:submit": {}` - отправка заказа в обработку.
+`"form:input": FormAction` - заполнение пользователем поля формы.
+`"form:payment": FormAction` - выбор пользователем типа оплаты.
 `"order:success": {}` - успешное формирование заказа.
 
 ### Данные
@@ -214,6 +215,7 @@ Presenter - презентер содержит основную логику п
 `getBuyerData(): IBuyer` - получает все данные покупателя.
 `clearBuyerData(): void` - очистка данных покупателя.
 `validateForm(): ValidationErrors` - валидирует данные, заполенные при оформлении заказа.
+`emitChanged(): void` - генерирует событие об изменении данных пользователя.
 
 ### Слой коммуникации
 
@@ -256,8 +258,70 @@ Presenter - презентер содержит основную логику п
 Поля типа:
 `"В корзину" | "Удалить из корзины" | "Недоступно"`
 
+#### Тип TCardData
+Типизирует классы отображения карточек товара.
+
+Поля типа:
+Pick<IProduct, 'title' | 'price'> &
+  Partial<Omit<IProduct, 'title' | 'price' | 'id'>> &
+  {
+    buttonText?: CardButtonText`
+    index?: number`
+  }
+
+#### Тип TCardCatalog
+Типизирует класс отображения карточки в галерее.
+
+Поля типа:
+`Required<Pick<TCardData, 'title' | 'price' | 'image' | 'category'>>`
+
+#### Тип TCardPreview
+Типизирует класс отображения карточки в превью.
+
+Поля типа:
+`Required<Pick<TCardData, 'title' | 'price' | 'image' | 'category' | 'description' | 'buttonText'>>`
+
+#### Тип TCardBasket
+Типизирует класс отображения карточки в корзине.
+
+Поля типа:
+`Required<Pick<TCardData, 'title' | 'price' | 'index'>>`
+
 #### Тип FormAction
 Типизирует данные, передаваемые при событиях элементов форм.
+
+Поля типа:
+{
+  field?: keyof IBuyer;
+  value: TPayment | string;
+}
+
+#### Тип TFormData
+Типизирует классы отображения форм.
+
+Поля типа:
+Partial<IBuyer> &
+  {
+    errorMessage: string;
+  }
+
+#### Тип TOrder
+Типизирует класс отображения формы заказа (способ оплаты и адрес).
+
+Поля типа:
+`Required<Pick<TFormData, 'payment' | 'address' | 'errorMessage'>>`
+
+#### Тип TOrder
+Типизирует класс отображения формы заказа (email и телефон).
+
+Поля типа:
+`Required<Pick<TFormData, 'email' | 'phone' | 'errorMessage'>>`
+
+#### Интерфейс ICardAction
+Данные для колбэка обработчика собыития карточек товара.
+
+Поля типа:
+`onClick: (event: Event) => void`
 
 #### Интерфейс IBasketViewData
 Данные для отображения корзины.
@@ -268,21 +332,38 @@ Presenter - презентер содержит основную логику п
 
 Интерфейст не имеет методов.
 
-#### Интерфейс ICardData расширяется от IProduct
-Данные для отображения карточки товара.
+#### Интерфейс IViewGallery
+Данные для отображения галлереи товаров.
 
-Дополнительные поля интерфейса:
-`buttonText?: CardButtonText` - текст кнопки карточки товара.
-`index?: number` - порядковый номер товара в корзине.
+Поля интерфейса:
+`items: HTMLElement[]` - готовые HTML-элементы карточек товара для отображения.
 
-Интерфейст не имеет методов.
+Интерфейс не имеет методов.
 
-#### Интерфейс IFormData расширяется от IBuyer
-Данные для отображения форм при оформлении заказа.
+#### Интерфейс IViewHeader
+Данные для отображения хедера.
 
-Дополнительные поля интерфейса:
-`errors: ValidationErrors` - объкет с ошибками валидации.
-`isTouched: boolean` - флаг повторной отправки формы.
+Поля интерфейса:
+`counter: number` - счетчик количства товаров в корзине.
+
+Интерфейс не имеет методов.
+
+#### Интерфейс IViewModal
+Данные для отображения модального окна.
+
+Поля интерфейса:
+`content: HTMLElement` - готовый HTML-элемент для отображеня.
+
+Интерфейс не имеет методов.
+
+#### Интерфейс IViewSuccess
+Данные для отображения окна успешного заказа.
+
+Поля интерфейса:
+`total: number` - итоговая сумма заказа.
+
+Интерфейс не имеет методов.
+
 
 Интерфейст не имеет методов.
 
@@ -303,7 +384,8 @@ Presenter - презентер содержит основную логику п
 `BasketCounter: HTMLElement` - счетчик количества добавленных в корзину товаров.
 `BasketButton: HTMLButtonElement` - кнопка открытия корзины.
 
-Методы класса: 
+Методы класса:
+`set counter(value: number)` - задает значение счетчика корзины.
 `reset(): void` - сбрасывает значение счетчика.
 
 #### Класс Gallery наследуется от Component
@@ -317,7 +399,8 @@ Presenter - презентер содержит основную логику п
 
 Класс не имеет дополнительных полей.
 
-Класс не имеет собственных методов.
+Методы класса:
+`set items(value: HTMLElement[])` - задает разметку содержимого галереи.
 
 #### Класс Modal наследуется от Component
 Отвечает за отображение модального окна.
@@ -336,7 +419,8 @@ Presenter - презентер содержит основную логику п
 `modalContent: HTMLElement` - контейнер для контента модального окна.
 `mmodalButtonClose: HTMLButtonElement` - кнопка закрытия модального окна.
 
-Методы класса: 
+Методы класса:
+`set content(value: HTMLElement)` - задает контент модального окна.
 `close(): void` - закрывает модальное окно.
 `open(data: IModalData): void` - открывает модальное окно.
 
@@ -360,6 +444,8 @@ Presenter - презентер содержит основную логику п
 `orderButton: HTMLButtonElement` - кнопка перехода к оформлению заказа.
 
 Методы класса: 
+`set content(value: HTMLElement[])` - задает разметку содержимого корзины.
+`set total(value: number)` - задает сумму добавленных в корзину товаров.
 `renderEmpty(): HTMLElement` - отрисовка пустой корзины.
 
 #### Класс Card наследуется от Component
@@ -388,11 +474,12 @@ Presenter - презентер содержит основную логику п
 `cardIndex?: HTMLElement | null` - контейнер для отображения порядкового номера товара в корзине.
 
 Методы класса:
-`updateFields(data: ICardData): void` - обновляет контент карточки товара.
+`set price(value: number | null)` - задает цену товара.
+`set title(value: string)` - задает название товара.
 `updateCategory(category: string): void` - устанавливает категорию товара соответсвенно карте категорий.
 
 #### Класс CardCatalog наследуется от Card
-Отвечает за отображение карточки товара в каталоге.
+Отвечает за отображение карточки товара в галерее.
 
 Конструктор:
   constructor(
@@ -402,13 +489,14 @@ Presenter - презентер содержит основную логику п
   ) {
   `super(container)` - передача элемента разметки в родительский конструктор.
 
-  `this.container.addEventListener('click', () => { this.events.emit<IAppEvents>(EVENT) })` - создание слушателя с генерацией события.
+  `this.container.addEventListener("click", actions.onClick)` - создание слушателя с генерацией события.
 };
 
 Класс не имеет дополнительных полей.
 
 Методы класса:
-`static create(data: ICardData, events: IEvents): HTMLElement` - статический метод для генерации карточки каталога.
+`set image(value: string)` - задает картинку товара.
+`set category(value: string)` - задает категорию товара.
 
 #### Класс CardPreview наследуется от Card
 Отвечает за отображение карточки товара в модальном окне (подробное описание).
@@ -421,13 +509,16 @@ Presenter - презентер содержит основную логику п
   ) {
   `super(container)` - передача элемента разметки в родительский конструктор.
 
-  `this.cardButton.addEventListener('click', () => { this.events.emit<IAppEvents>(EVENT) })` - создание слушателя с генерацией события.
+  `this.cardButton?.addEventListener("click", actions.onClick)` - создание слушателя с генерацией события.
 };
 
 Класс не имеет дополнительных полей.
 
 Методы класса:
-`static create(data: ICardData, events: IEvents): HTMLElement` - статический метод для генерации карточки превью.
+`set image(value: string)` - задает картинку товара.
+`set category(value: string)` - задает категорию товара.
+`set description(value: string)` - задает описание товара.
+`set buttonText(value: CardButtonText)` - задает текст кнопки товара.
 
 #### Класс CardBasket наследуется от Card
 Отвечает за отображение карточки товара в корзине.
@@ -440,13 +531,13 @@ Presenter - презентер содержит основную логику п
   ) {
   `super(container)` - передача элемента разметки в родительский конструктор.
 
-  `this.cardButton.addEventListener('click', () => { this.events.emit<IAppEvents>(EVENT) })` - создание слушателя с генерацией события.
+  `this.cardButton?.addEventListener("click", actions.onClick)` - создание слушателя с генерацией события.
 };
 
 Класс не имеет дополнительных полей.
 
 Методы класса:
-`static create(data: ICardData, events: IEvents): HTMLElement` - статический метод для генерации карточки корзины.
+`set index(value: number)` - задает порядковый номер товара в корзине.
 
 #### Класс Form наследуется от Component
 Абстрактный класс для форм при оформлении заказа.
@@ -472,10 +563,11 @@ Presenter - презентер содержит основную логику п
 `abstract readonly SUBMIT_EVENT: Extract<keyof IAppEvents,"order:next" | "order:submit">` - поле для хранения типа события, отправляемого при нажатии formButton.
 
 Методы класса: 
-`renderErrors(errors: ValidationErrors, isTouched: boolean): void` - рендер ошибок валидации.
+`set errorMessage(value: string)` - задает сообщение об ошибке валидации на форме.
+`set ${input.name}(value: string)` - задает содержимое соответствующих инпутов форм.
 `setFormButtonDisabled(disabled: boolean): void` - устанавливает / отменяет блокировку кнопки отправки формы.
 `toggleButton(activeButton: HTMLButtonElement): void` - переключает активную кнопку оплаты.
-`reset(): void` - сбрасывает значения элемента формы.
+`reset(): void` - сбрасывает значения элементов формы.
 
 #### Класс Order наследуется от Form
 Отвечает за отображение формы выбора оплаты и адреса доставки при оформлении заказа.
@@ -484,11 +576,13 @@ Presenter - презентер содержит основную логику п
   `constructor(private events: IEvents)` { - в конструктор передается экземпляр класса брокера событий.
   `const template` - находится шаблон разметки, за который отвечает класс.
   `super(template, events)` - передача элемента разметки и брокера событий в родительский конструктор.
+  
 };
 
 Класс не имеет дополнительных полей.
 
-Класс не имеет дополнительных методов.
+Методы класса:
+`set payment(value: TPayment)` - задает способ оплаты.
 
 #### Класс Contacts наследуется от Form
 Отвечает за отображение формы выбора email и телефона при оформлении заказа.
@@ -516,20 +610,14 @@ Presenter - презентер содержит основную логику п
   `this.successButton.addEventListener('click', () => { this.events.emit<IAppEvents>(EVENT) })` - создание слушателя с генерацией события.
 };
 
-Класс не имеет дополнительных полей.
+Дополнительные поля класса:
+`priceContainer: HTMLElement` - находится элмент разметки.
+`successButton: HTMLButtonElement` - находится элмент разметки.
 
-Класс не имеет дополнительных методов.
+Методы класса:
+``set total(value: number)` - задает итоговую сумму заказа.`
 
 ### Презентер
-
-#### Тип FormsState
-Типизирует объект состояний полей форм.
-
-Поля типа:
-{
-  order: { payment: boolean; address: boolean; isTouched: boolean };
-  contacts: { email: boolean; phone: boolean; isTouched: boolean };
-}
 
 #### Тип Values
 Вспомогательный тип для получения типа значения передаваемого объекта.
@@ -554,6 +642,12 @@ Presenter - презентер содержит основную логику п
 
 Поля типа:
 `"card-preview" | "basket" | "success" | null`
+
+#### Тип FormType
+Типизирует возможные формы.
+
+Поля типа:
+`'order' | 'contacts'`
 
 #### Класс Presenter
 Определяет бизнес-логику приложения и отвечает за взаимодействие слоев представления и данных.
@@ -584,14 +678,39 @@ constructor(
 Методы класса:
 `async init(): Promise<void>` - инициализация приложения.
 `async loadData(): Promise<FetchData>` - запрашивает данные с сервера по API.
-`renderGallery(data: IProduct[]): void` - отрисовывает каталог товаров.
-`renderBasket(): HTMLElement` - отрисовывает корзину.
-`renderCardPreview(data: IProduct): HTMLElement` - отрисовывает карточку товара в превью.
-`renderForm<T extends "order" | "contacts">(formType: T, view: Form): HTMLElement` - отрисовывает заданную форму при оформлении заказа.
-`setInputState(data: FormAction): void` - устанавливает флаги formsState в зависимости от заполненности инпутов формы.
+`handleBuyerChange(data: Partial<IBuyer>): void` - управляет изменения данных о покупателе.
+`isFormValid(form: FormType, allErrors: ValidationErrors): boolean` - валидирует форму и управляет кнопкой перехода на следующий шаг.
+`generateErrorMessage(form: FormType, allErrors: ValidationErrors): string` - генерирует сообщение об ошибке при валидации формы.
 `async handleFormEvent(event: FormsEvent): Promise<void>` - валидирует и управляет следующим шагом при отправке формы.
 `updateModal(): void` - обновляет отображение текущего контента модального окна.
-`updateButtonState(): void` - управляет блокировкой кнопки отправки формы в зависимости от заполненности полей.
 `prepareOrder(): IOrder` - подготавливает данные для отправки заказа.
 `async sendOrder(): Promise<OrderResponse>` - отправляет сформированный заказ на сервер.
 `clearData(): void` - очищает все данные для нового цикла формирования заказа.
+
+### Дополнительные функции
+
+#### Функция renderGallery
+Заполняет компонент галлереи карточками товаров.
+
+Параметры функции:
+`data: IProduct[]` - данные карточек товаров.
+`gallery: Gallery` - экземпляр класса, ответственного за отображение галлереи.
+`events: IEvents` - экземпляр калсса брокера событий.
+
+Функция ничего не возвращает.
+
+#### Функция renderBasket
+Возвращает разметку корзины.
+
+Параметры функции:
+`basket: Basket` - экземпляр класса данных корзины.
+`basketView: BasketView` - экземпляр класса, ответственного за отображение корзины.
+`events: IEvents` - экземпляр калсса брокера событий.
+
+#### Функция renderCardPreview
+Возвращает разметку карточки в превью.
+
+Параметры функции:
+`data: IProduct` - данные карточки товара.
+`basket: Basket` - экземпляр класса данных корзины (для проверки нахождения товара в нем для рендера корректной кнопки добавления / удаления товара).
+`events: IEvents` - экземпляр калсса брокера событий.

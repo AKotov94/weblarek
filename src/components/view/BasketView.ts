@@ -24,20 +24,20 @@ export class BasketView extends Component<IBasketViewData> {
     })
   }
 
-  set content(items: HTMLElement[]) {
+  set content(value: HTMLElement[]) {
     this.basketList.innerHTML = '';
-    this.orderButton.disabled = items.length === 0;
-    if (items.length === 0) {
+    this.orderButton.disabled = value.length === 0;
+    if (value.length === 0) {
       this.basketList.appendChild(this.renderEmpty());
       } else {
-      items.forEach((card)=> {
+      value.forEach((card)=> {
         this.basketList.appendChild(card);
       })
     }
   };
 
-  set total(price: number) {
-    this.basketTotalPrice.textContent = `${price} синапсов`
+  set total(value: number) {
+    this.basketTotalPrice.textContent = `${value} синапсов`
   }
   
   private renderEmpty(): HTMLElement {

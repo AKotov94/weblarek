@@ -23,7 +23,6 @@ export const EVENTS = {
   ORDER_NEXT: "order:next",
   ORDER_SUBMIT: "order:submit",
   FORM_INPUT: "form:input",
-  FORM_BLUR: "form:blur",
   FORM_PAYMENT: "form:payment",
   ORDER_SUCCESS: "order:success",
 } as const;
@@ -41,7 +40,6 @@ export interface IAppEvents {
   "order:next": {};
   "order:submit": {};
   "form:input": FormAction;
-  "form:blur": FormAction;
   "form:payment": FormAction;
   "order:success": {};
 }

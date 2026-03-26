@@ -22,9 +22,9 @@ export class Modal extends Component<IViewModal> {
     })
   }
 
-  set content(element: HTMLElement) {
+  set content(value: HTMLElement) {
     this.modalContent.innerHTML = '';
-    this.modalContent.appendChild(element);
+    this.modalContent.appendChild(value);
   }
 
   close(): void {

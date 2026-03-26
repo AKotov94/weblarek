@@ -14,23 +14,23 @@ export class CardPreview extends Card<TCardPreview> {
     }
   }
 
-  set image(src: string) {
-    this.setImage(this.cardImage!, `${CDN_URL}${src}`);
+  set image(value: string) {
+    this.setImage(this.cardImage!, `${CDN_URL}${value}`);
   }
   
   set category(value: string) {
     this.updateCategory(value);
   }
 
-  set description(content: string) {
+  set description(value: string) {
     if (this.cardText)
-    this.cardText.textContent = content;
+    this.cardText.textContent = value;
   }
 
-  set buttonText(content: CardButtonText) {
+  set buttonText(value: CardButtonText) {
     if (this.cardButton) {
-      this.cardButton.textContent = content;
-    this.cardButton.disabled = content === "Недоступно";
+      this.cardButton.textContent = value;
+    this.cardButton.disabled = value === "Недоступно";
     }
   }
 }

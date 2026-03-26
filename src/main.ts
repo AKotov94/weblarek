@@ -1,3 +1,7 @@
+// Спасибо за ревью и наводку посмотреть еще раз видео наставника!
+// Когда смотрел первый раз, было непонятно без погружения, а потом я забыл, что оно есть, делал как представлял.
+// Переделал на классы view с сеттерами через рендер с Object.assign и колбэками с данными в обработчиках.
+
 import './scss/styles.scss';
 
 import { Catalog } from './components/models/Catalog';
@@ -90,6 +94,10 @@ class Presenter {
     email: false,
     phone: false,
   };
+  private formsFields: Record<FormType, Array<keyof ValidationErrors>> = {
+    order: ['payment', 'address'],
+    contacts: ['email', 'phone']
+  }
   constructor(
     private events: IEvents,
     private api: ApiCommunication,
@@ -201,13 +209,13 @@ class Presenter {
     const formType = ('payment' in data || 'address' in data)
       ? 'order'
       : 'contacts'
-    const errors = this.generateErrorMessage(formType);
+    const errors = this.buyer.validateForm();
     const formData: TFormData = {
       ...data,
-      errorMessage: errors
+      errorMessage: this.generateErrorMessage(formType, errors)
     }
     this[formType].render(formData);
-    this[formType].setFormButtonDisabled(!this.isFormValid(formType));
+    this[formType].setFormButtonDisabled(!this.isFormValid(formType, errors));
     Object.keys(data).forEach(key => {
       if (key in this.formsTouchedState) {
         this.formsTouchedState[key as keyof typeof this.formsTouchedState] = true;
@@ -215,22 +223,12 @@ class Presenter {
     })
   }
 
-  private isFormValid(form: FormType): boolean {
-    const allErrors = this.buyer.validateForm();
-    const fieldsByForm: Record<FormType, Array<keyof ValidationErrors>> = {
-      order: ['payment', 'address'],
-      contacts: ['email', 'phone']
-    };
-    return fieldsByForm[form].every(field => !allErrors[field]);
+  private isFormValid(form: FormType, allErrors: ValidationErrors): boolean {
+    return this.formsFields[form].every(field => !allErrors[field]);
   }
 
-  private generateErrorMessage(form: FormType): string {
-    const allErrors = this.buyer.validateForm();
-    const fieldsByForm: Record<FormType, Array<keyof ValidationErrors>> = {
-      order: ['payment', 'address'],
-      contacts: ['email', 'phone']
-    };
-    const errors = fieldsByForm[form]
+  private generateErrorMessage(form: FormType, allErrors: ValidationErrors): string {
+    const errors = this.formsFields[form]
       .map(field => {
         if (!this.formsTouchedState[field]) {
           return '';
