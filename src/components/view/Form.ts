@@ -68,55 +68,30 @@ export abstract class Form<T extends TFormData> extends Component<T> {
     });
   }
 
-  
-  
   set errorMessage(err: string) {
     this.formErrors.textContent = err
   }
 
-  // render(data: IFormData): HTMLElement {
-  //   super.render(data);
-  //   this.formInputs.forEach((input) => {
-  //     const name = input.name as keyof IBuyer;
-  //     // if (data[name]) {
-  //     //   input.value = data[name];
-  //     // }
-  //     if (name in data) {
-  //       input.value = data[name] ?? "";
-  //     }
-  //   });
-  //   this.renderErrors(data.errors, data.isTouched);
-  //   return this.container;
-  // }
+  setFormButtonDisabled(disabled: boolean): void {
+    this.formButton.disabled = disabled;
+  }
 
-  // protected renderErrors(errors: ValidationErrors, isTouched: boolean): void {
-  //   const errorMessages = Object.values(errors).filter(Boolean);
-  //   if (isTouched && errorMessages.length > 0) {
-  //     this.formErrors.textContent = errorMessages.join(", ");
-  //   } else {
-  //     this.formErrors.textContent = "";
-  //   }
-  // }
-
-  // setFormButtonDisabled(disabled: boolean): void {
-  //   this.formButton.disabled = disabled;
-  // }
-
-  toggleButton(activeButton: HTMLButtonElement): void {
+  protected toggleButton(activeButton: HTMLButtonElement): void {
     this.paymentButtons?.forEach((button) => {
       button.classList.toggle("button_alt", button !== activeButton);
     });
   }
 
-  // reset(): void {
-  //   this.formInputs.forEach((input) => {
-  //     input.value = "";
-  //   });
-  //   if (this.paymentButtons) {
-  //     this.paymentButtons.forEach((button) => {
-  //       button.classList.add("button_alt");
-  //       this.setFormButtonDisabled(true);
-  //     });
-  //   }
-  // }
+  reset(): void {
+    this.formInputs.forEach((input) => {
+      input.value = "";
+    });
+    if (this.paymentButtons) {
+      this.paymentButtons.forEach((button) => {
+        button.classList.add("button_alt");
+      });
+    };
+    this,this.errorMessage = '';
+    this.setFormButtonDisabled(true);
+  }
 }

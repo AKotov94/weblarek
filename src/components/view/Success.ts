@@ -2,7 +2,11 @@ import { cloneTemplate, ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { EVENTS, IAppEvents, IEvents } from "../base/Events";
 
-export class Success extends Component<number> {
+export interface IViewSuccess {
+  total: number
+}
+
+export class Success extends Component<IViewSuccess> {
   private priceContainer: HTMLElement;
   private successButton: HTMLButtonElement;
 
@@ -16,10 +20,8 @@ export class Success extends Component<number> {
       this.events.emit<IAppEvents['order:success']>(EVENTS.ORDER_SUCCESS)
     });
   }
-
-  render(totalPrice: number): HTMLElement {
-    super.render(totalPrice);
-    this.priceContainer.textContent = `Списано ${totalPrice} синапсов`
-    return this.container
+  
+  set total(value: number) {
+    this.priceContainer.textContent = `Списано ${value} синапсов`
   }
 }
