@@ -1,4 +1,4 @@
-import { IBuyer, IProduct } from "../../types";
+import { IProduct } from "../../types";
 import { FormAction } from "../view/Form";
 
 // Хорошая практика даже простые типы выносить в алиасы
@@ -31,7 +31,7 @@ export interface IAppEvents {
   "basket:changed": {};
   "catalog:changed": {};
   "catalog:selected": IProduct;
-  "buyer:changed": Partial<IBuyer>;
+  "buyer:changed": {};
   "modal:close": {};
   "basket:open": {};
   "basket:order": {};

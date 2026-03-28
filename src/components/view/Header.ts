@@ -24,8 +24,4 @@ export class Header extends Component<IViewHeader> {
   set counter(value: number) {
     this.basketCounter.textContent = `${value}`
   }
-
-  reset():void {
-    this.render({ counter: 0 });
-  }
 }

@@ -18,7 +18,7 @@ import { BasketView, IBasketViewData } from './components/view/BasketView';
 import { Order } from './components/view/Order';
 import { Contacts } from './components/view/Contacts';
 import { IViewSuccess, Success } from './components/view/Success';
-import { FetchData, IBuyer, IOrder, IProduct, OrderResponse, TPayment, ValidationErrors } from './types';
+import { FetchData, IOrder, IProduct, OrderResponse, TPayment, ValidationErrors } from './types';
 import { CardCatalog, TCardCatalog } from './components/view/CardCatalog';
 import { CardBasket, TCardBasket } from './components/view/CardBasket';
 import { CardPreview, TCardPreview } from './components/view/CardPreview';
@@ -27,7 +27,7 @@ import { FormAction, TFormData } from './components/view/Form';
 type Values<T, K extends keyof T> = T[K];
 type FormsEvent = Values<typeof EVENTS, "ORDER_NEXT" | "ORDER_SUBMIT">;
 type CardID = Values<IProduct, 'id'> | null;
-type ModalContent = "card-preview" | "basket" | "success" | null;
+type ModalContent = "card-preview" | "basket" | "success" | "order" | "contacts" | null;
 type FormType = 'order' | 'contacts';
 
 function renderGallery(data: IProduct[], gallery: Gallery, events: IEvents): void {
@@ -89,10 +89,8 @@ class Presenter {
   private currentModalContent: ModalContent = null;
   private currentCardPreviewID: CardID = null;
   private formsTouchedState = {
-    payment: false,
-    address: false,
-    email: false,
-    phone: false,
+    order: false,
+    contacts: false,
   };
   private formsFields: Record<FormType, Array<keyof ValidationErrors>> = {
     order: ['payment', 'address'],
@@ -164,6 +162,7 @@ class Presenter {
       const content: IViewModal = {
         content: this.order.render()
       }
+      this.currentModalContent = 'order'
       this.modal.render(content);
     });
     
@@ -177,8 +176,8 @@ class Presenter {
       }
     });
 
-    this.events.on<IAppEvents['buyer:changed']>(EVENTS.BUYER_CHANGED, (data: Partial<IBuyer>) => {
-      this.handleBuyerChange(data);
+    this.events.on<IAppEvents['buyer:changed']>(EVENTS.BUYER_CHANGED, () => {
+      this.handleBuyerChange();
     });
     
     [EVENTS.ORDER_NEXT, EVENTS.ORDER_SUBMIT].forEach((event) => {
@@ -205,22 +204,44 @@ class Presenter {
     };
   }
 
-  private handleBuyerChange(data: Partial<IBuyer>): void {
-    const formType = ('payment' in data || 'address' in data)
-      ? 'order'
-      : 'contacts'
-    const errors = this.buyer.validateForm();
-    const formData: TFormData = {
-      ...data,
-      errorMessage: this.generateErrorMessage(formType, errors)
+  private handleBuyerChange(): void {
+    const { payment, address, email, phone } = this.buyer.getBuyerData();
+    let content: TFormData = { errorMessage: '' }
+    const errors = this.buyer.validateForm(); 
+    switch (this.currentModalContent) {
+      case 'order':
+        this.formsTouchedState.order = true;
+        content = {
+          payment,
+          address,
+          errorMessage: this.generateErrorMessage('order', errors)
+        }
+        this.order.render(content);
+        this.order.setFormButtonDisabled(!this.isFormValid('order', errors));
+        break;
+      case 'contacts':
+        this.formsTouchedState.contacts = true
+        content = {
+          email,
+          phone,
+          errorMessage: this.generateErrorMessage('contacts', errors)
+        }
+        this.contacts.render(content);
+        this.contacts.setFormButtonDisabled(!this.isFormValid('contacts', errors));
+        break;
+      default:
+        content = {
+          payment,
+          address,
+          email,
+          phone,
+          errorMessage: ''
+        }
+      this.order.render(content);
+      this.contacts.render(content);
+      this.order.setFormButtonDisabled(!this.isFormValid('order', errors));
+      this.contacts.setFormButtonDisabled(!this.isFormValid('contacts', errors));
     }
-    this[formType].render(formData);
-    this[formType].setFormButtonDisabled(!this.isFormValid(formType, errors));
-    Object.keys(data).forEach(key => {
-      if (key in this.formsTouchedState) {
-        this.formsTouchedState[key as keyof typeof this.formsTouchedState] = true;
-      }
-    })
   }
 
   private isFormValid(form: FormType, allErrors: ValidationErrors): boolean {
@@ -228,15 +249,15 @@ class Presenter {
   }
 
   private generateErrorMessage(form: FormType, allErrors: ValidationErrors): string {
-    const errors = this.formsFields[form]
-      .map(field => {
-        if (!this.formsTouchedState[field]) {
-          return '';
-        }
-        return allErrors[field] || '';
-      })
-      .filter(Boolean)
-    return errors.join(', ');
+    const errors = this.formsFields[form] 
+      .map(field => { 
+        if (!this.formsTouchedState[form]) { 
+          return ''; 
+        } 
+        return allErrors[field] || ''; 
+      }) 
+      .filter(Boolean) 
+    return errors.join(', '); 
   }
 
   private async handleFormEvent(event: FormsEvent): Promise<void> {
@@ -246,6 +267,7 @@ class Presenter {
         modalContent = {
           content: this.contacts.render()
         };
+        this.currentModalContent = 'contacts'
         break;
       case "order:submit":
         try {
@@ -314,15 +336,10 @@ class Presenter {
   private clearData(): void {
     this.basket.clearBasket();
     this.buyer.clearBuyerData();
-    this.header.reset();
-    this.order.reset();
-    this.contacts.reset();
     this.currentCardPreviewID = null;
     this.formsTouchedState = {
-      payment: false,
-      address: false,
-      email: false,
-      phone: false,
+      order: false,
+      contacts: false,
     };
   }
 }

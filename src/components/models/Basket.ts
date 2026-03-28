@@ -22,7 +22,7 @@ export class Basket {
 
   clearBasket(): void {
     this.items = [];
-    // Наверное, для clear должно быть свое событие (у каждой модели), но в этой реализации не используется
+    this.emitChanged();
   };
 
   getTotalPrice(): number {

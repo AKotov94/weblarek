@@ -82,17 +82,4 @@ export abstract class Form<T extends TFormData> extends Component<T> {
       button.classList.toggle("button_alt", button !== activeButton);
     });
   }
-
-  reset(): void {
-    this.formInputs.forEach((input) => {
-      input.value = "";
-    });
-    if (this.paymentButtons) {
-      this.paymentButtons.forEach((button) => {
-        button.classList.add("button_alt");
-      });
-    };
-    this.errorMessage = '';
-    this.setFormButtonDisabled(true);
-  }
 }

@@ -13,12 +13,20 @@ export class Order extends Form<TOrder> {
     super(template, events);
   }
 
+  // Остальные сеттеты (для данных вводимых через инпуты) дочерних классов создаются в консутркторе form через Object.defineProperty
+
   set payment(value: TPayment) {
-    const activeButton = this.paymentButtons?.find(
+    if (value) {
+      const activeButton = this.paymentButtons?.find(
       (button) => button.getAttribute("name") === value
-    );
-    if (activeButton && value) {
+      );
+      if (activeButton && value) {
       this.toggleButton(activeButton);
-    }
+      } 
+    } else {
+      this.paymentButtons?.forEach((button) => {
+        button.classList.add('button_alt')
+      })
+    }    
   }
 }

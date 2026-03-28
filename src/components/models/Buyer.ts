@@ -15,7 +15,7 @@ export class Buyer {
 
   setBuyerData<K extends keyof IBuyer>(key: K, value: IBuyer[K]): void {
     this.buyer[key] = value;
-    this.emitChanged(key);
+    this.emitChanged();
   };
 
   getBuyerData(): IBuyer {
@@ -24,7 +24,7 @@ export class Buyer {
 
   clearBuyerData(): void {
     this.buyer = {...defoltBuyer};
-    // Наверное, для clear должно быть свое событие (у каждой модели), но в этой реализации не используется
+    this.emitChanged();
   };
 
   validateForm(): ValidationErrors {
@@ -44,7 +44,7 @@ export class Buyer {
     return errors;
   }
 
-  private emitChanged<K extends keyof IBuyer>(key: K): void {
-    this.events.emit<IAppEvents['buyer:changed']>(EVENTS.BUYER_CHANGED, { [key]: this.buyer[key] });
+  private emitChanged(): void {
+    this.events.emit<IAppEvents['buyer:changed']>(EVENTS.BUYER_CHANGED);
   };
 }
